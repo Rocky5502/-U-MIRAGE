@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 GATE_SIZES = (20, 50, 100, 500, 1000)
+DEFAULT_COMPATIBILITY_INPUT = "data/materialized/mihbench_pilot/episodes.jsonl"
 
 
 def _run(cmd: list[str]) -> None:
@@ -38,10 +39,17 @@ def run_gate(args: argparse.Namespace) -> None:
     if not input_path.exists():
         raise SystemExit(
             f"Input manifest does not exist: {input_path}\n"
-            "Materialize MIHBench first with scripts/materialize_mihbench_pilot.py."
+            "For the MIHBench compatibility ladder, first run "
+            "`python scripts/materialize_mihbench_pilot.py --limit 1000 --seed 27`. "
+            "For the 500+ MIRAGE-U scientific pilot, pass the frozen source-balanced JSONL with --input."
         )
     if args.size >= 500 and not args.revision:
         raise SystemExit("500+ episode confirmatory runs require a frozen --revision.")
+    if args.size >= 500 and args.input == DEFAULT_COMPATIBILITY_INPUT:
+        raise SystemExit(
+            "The default MIHBench input is for 20/50/100 compatibility gates only. "
+            "For the 500+ scientific pilot, pass the frozen source-balanced MIRAGE-U JSONL with --input."
+        )
 
     model_slug = _slug(args.model_id)
     output = Path(args.output_root) / model_slug / f"gate_{args.size:04d}"
@@ -117,7 +125,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     gate = sub.add_parser("gate", help="run a deterministic real-model experiment gate")
     gate.add_argument("--size", type=int, choices=GATE_SIZES, required=True)
-    gate.add_argument("--input", default="data/cache/mihbench_pilot.jsonl")
+    gate.add_argument("--input", default=DEFAULT_COMPATIBILITY_INPUT)
     gate.add_argument("--output-root", default="artifacts/local")
     gate.add_argument("--adapter", choices=["qwen", "transformers"], default="qwen")
     gate.add_argument("--model-id", default="Qwen/Qwen3-VL-8B-Instruct")
