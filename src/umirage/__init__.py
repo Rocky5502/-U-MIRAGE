@@ -1,2 +1,2 @@
-__version__="0.1.0"
-from .core import Episode, ModelOutput, UMiragePipeline
+"""U-MIRAGE research package."""
+__version__ = "0.1.0"

@@ -1,0 +1,9 @@
+name: internvl3.5-8b-class
+adapter: transformers
+model_id: TBD_VERIFY_EXACT_RELEASE
+revision: TBD_FREEZE_BEFORE_OFFICIAL_RUN
+trust_remote_code: true
+generation:
+  temperature: 0.0
+  max_new_tokens: 256
+  do_sample: false

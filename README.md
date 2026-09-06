@@ -2,70 +2,99 @@
 
 **Source-Aware Uncertainty Propagation for Reliable Multi-Image Vision-Language Reasoning**
 
-Research-engineering foundation for the CVPR 2027 project. U-MIRAGE decomposes reliability into **visual**, **cross-image integration**, and **reasoning** uncertainty, propagates those signals into final risk, and recommends source-conditioned actions.
+U-MIRAGE is a research codebase for studying **where uncertainty originates** in multi-image VLM reasoning and how it propagates from visual evidence, through cross-image integration, to downstream reasoning and final answer risk.
 
-> **Pre-experiment status.** The repository is executable end-to-end on deterministic synthetic episodes. Synthetic outputs validate plumbing only and are never treated as paper results.
+> Status: **research foundation / pre-experiment**. The repository is fully executable on synthetic examples and includes production interfaces for real VLMs and benchmarks. No paper result is claimed until the frozen experiment suite is run.
+
+## Scientific contract
+
+U-MIRAGE separates three uncertainty sources:
+
+1. **Visual uncertainty** — an individual image/region is unreliable or ambiguous.
+2. **Integration uncertainty** — images are individually interpretable, but their joint evidence is unstable/conflicting.
+3. **Reasoning uncertainty** — evidence is adequate, but composition/inference is unreliable.
+
+The system emits a calibrated risk estimate, a source posterior, and a source-conditioned action recommendation.
 
 ## Quick start
 
 ```bash
 python -m venv .venv
-# Windows: .venv\Scripts\activate
-# Linux/WSL: source .venv/bin/activate
+# Windows: .venv\\Scripts\\activate
+# Linux/macOS: source .venv/bin/activate
 pip install -e .[dev]
+python scripts/make_demo_data.py
 python scripts/run_smoke.py
 pytest -q
 ```
 
-For the real local VLM path:
+Smoke artifacts are written to `artifacts/smoke/` and are **not paper results**.
+
+## Real-model setup
 
 ```bash
-pip install -e '.[vlm,data]'
+pip install -e .[vlm]
 python -m umirage.cli registry
-python scripts/run_jsonl.py --input <pilot.jsonl> --output artifacts/pilot/qwen3vl8b --model-id Qwen/Qwen3-VL-8B-Instruct --revision <FROZEN_REVISION>
+python -m umirage.cli run \
+  --dataset data/examples/mirage_demo.jsonl \
+  --adapter mock \
+  --output artifacts/dev/run.jsonl
 ```
 
-See `docs/LOCAL_RUN.md` before the first GPU run.
+The `transformers` adapter supports local Hugging Face VLM checkpoints when installed with the `vlm` extra. For the paper, model/checkpoint IDs will be frozen in `configs/models/` before the first official run.
 
-## Scientific pipeline
+## Real pilot runner
+
+For real local inference use the canonical JSONL runner; start with 20 examples before scaling:
+
+```bash
+pip install -e '.[dev,vlm,data,analysis]'
+python scripts/run_jsonl.py --input <pilot.jsonl> --output artifacts/pilot/qwen3vl8b --adapter qwen --model-id Qwen/Qwen3-VL-8B-Instruct --revision <FROZEN_REVISION>
+```
+
+The runner writes raw predictions, reliability metrics, risk--coverage data, and an environment/model/dataset provenance manifest. See `docs/LOCAL_RUN.md`, `data/SCHEMA.md`, and `docs/MODEL_ADAPTERS.md`.
+
+## Repository map
 
 ```text
-images + question
-  ├─ visual uncertainty      (local evidence quality)
-  ├─ integration uncertainty (leave-one-image-out/order counterfactuals)
-  └─ reasoning uncertainty   (structured prompt/trace consistency)
-                ↓
-        source-aware propagation
-                ↓
-       failure risk + source posterior
-                ↓
-reinspect image / compare images / verify reasoning / abstain
+configs/                 frozen experiment/model/dataset configs
+src/umirage/             package code
+  adapters/              mock + optional Transformers VLM adapters
+  signals/               visual/integration/reasoning uncertainty
+  propagation.py         source-aware uncertainty propagation
+  intervention.py        source-conditioned action policy
+  datasets.py            benchmark registry + JSONL schema
+  evaluation.py          reliability/calibration metrics
+scripts/                 data preparation and smoke-run entry points
+tests/                   deterministic unit/integration tests
+data/                     manifests/examples only; no restricted media
+artifacts/                generated outputs (git-ignored except schema docs)
+docs/                     experiment protocol and reproducibility notes
 ```
 
 ## Planned benchmark suite
 
-Primary: MIOH, VisChainBench, MIHBench, REST/REST+. Generalization: HallusionBench, MMMU/MMMU-Pro, VLM-UQBench, HalLoc where release terms permit. Raw third-party media is not vendored. See `data/DATASETS.md` and `data/SCHEMA.md`.
+Primary: **MIOH**, **VisChainBench**, **MIHBench**, **REST/REST+**.  
+Generalization: HallusionBench, MMMU/MMMU-Pro, VLM-UQBench, HalLoc where release terms permit.
+
+See [`data/DATASETS.md`](data/DATASETS.md) before downloading or redistributing any data.
 
 ## Planned model families
 
-Qwen3-VL 8B (primary), Qwen2.5-VL 7B, InternVL3.5 8B-class, Molmo 2 8B/open variant. Proprietary models, if used, are evaluation-only. Exact revisions are frozen before scientific runs.
+- Qwen3-VL (8B-class primary)
+- Qwen2.5-VL 7B
+- InternVL3.5 (8B-class)
+- Molmo 2 (8B/open variant)
 
-## Reliability metrics implemented
+Closed models, if used, are evaluation-only and must be frozen by exact API identifier/date in the experiment manifest.
 
-The experiment runner writes raw predictions plus Accuracy, AUROC, ECE, Brier score, AURC, and source Macro-F1. Paper tables remain downstream of raw artifacts.
+## Reproducibility rules
 
-## Reproducibility contract
+- Every official run gets a manifest containing git SHA, model ID/revision, dataset manifest hash, seed, prompt hash, generation settings, environment, and hardware.
+- Raw benchmark media is never silently modified; perturbations are specified by deterministic manifests.
+- Synthetic/CI runs are clearly separated from paper-result directories.
+- No hand-entered numbers are copied into paper tables; table builders consume exported CSV/JSON artifacts.
 
-Every official run records git SHA, model ID/revision, dataset manifest hash, prompt/configuration, seed, environment, hardware, and output artifacts. Paper tables/figures are generated from result artifacts—never hand-entered.
+## License
 
-## Repository map
-
-- `src/umirage/`: research library, real/mock adapters, metrics, experiment runner
-- `configs/`: pilot/model/dataset freeze points
-- `scripts/`: smoke, dataset, and JSONL run utilities
-- `tests/`: deterministic correctness tests
-- `docs/`: experiment, local-run, and result contracts
-- `data/`: schemas/manifests only; raw media stays upstream
-- `artifacts/`: generated outputs (ignored)
-
-MIT-licensed code; dataset/media licenses remain upstream.
+Code is released under the MIT License. Dataset/media licenses remain with their original owners and are documented separately.

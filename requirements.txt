@@ -1,2 +1,3 @@
-# Core is stdlib-only. For development: pip install -e .[dev]
-# For local VLMs: pip install -e .[vlm]
+-e .[dev]
+# For local VLM inference: pip install -e .[vlm]
+# For analysis/plots:      pip install -e .[analysis]

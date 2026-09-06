@@ -1,0 +1,14 @@
+experiment: mirage-u-pilot
+seed: 2027
+sources: [clean, visual, integration, reasoning]
+models:
+  - configs/models/qwen3_vl_8b.yaml
+  - configs/models/qwen2_5_vl_7b.yaml
+target_examples: 500
+counterfactuals:
+  leave_one_image_out: true
+  image_order_permutations: 2
+  prompt_variants: 3
+selection:
+  target_coverage: [0.5, 0.7, 0.8, 0.9]
+notes: "Pilot gate only; do not scale until source separability is demonstrated."

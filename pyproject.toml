@@ -1,29 +1,42 @@
 [build-system]
-requires=["setuptools>=68","wheel"]
-build-backend="setuptools.build_meta"
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
-name="u-mirage"
-version="0.1.0"
-description="Source-aware uncertainty propagation for multi-image VLM reasoning"
-requires-python=">=3.10"
-dependencies=[]
+name = "u-mirage"
+version = "0.1.0"
+description = "Source-aware uncertainty propagation for multi-image vision-language reasoning"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+dependencies = [
+  "numpy>=1.26,<3",
+  "PyYAML>=6.0",
+]
 
 [project.optional-dependencies]
-dev=["pytest>=8","ruff>=0.6"]
-vlm=["torch>=2.4","transformers>=4.55","accelerate>=1.0","pillow>=10","pyyaml>=6"]
-data=["datasets>=3","pyyaml>=6"]
+dev = ["pytest>=8", "ruff>=0.6"]
+vlm = [
+  "torch>=2.4",
+  "transformers>=4.57",
+  "accelerate>=1.0",
+  "datasets>=3.0",
+  "pillow>=10",
+  "qwen-vl-utils>=0.0.8",
+]
+data = ["datasets>=3.0", "pillow>=10"]
+analysis = ["pandas>=2.2", "scikit-learn>=1.5", "matplotlib>=3.9"]
 
 [project.scripts]
-umirage="umirage.cli:main"
+umirage = "umirage.cli:main"
 
 [tool.setuptools.packages.find]
-where=["src"]
+where = ["src"]
 
 [tool.pytest.ini_options]
-pythonpath=["src"]
-testpaths=["tests"]
+addopts = "-ra"
+testpaths = ["tests"]
 
 [tool.ruff]
-line-length=110
-target-version="py310"
+line-length = 100
+target-version = "py310"

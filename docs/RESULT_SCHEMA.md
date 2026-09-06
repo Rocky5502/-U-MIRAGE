@@ -1,11 +1,13 @@
-# Paper-facing result contract
+# Paper-facing artifact contract
 
-Official aggregation should export:
-- `source_attribution.csv`: model,benchmark,method,visual_f1,integration_f1,reasoning_f1,macro_f1
-- `failure_calibration.csv`: model,benchmark,method,auroc,auprc,ece,brier,aurc
-- `intervention.csv`: model,benchmark,policy,accuracy,hallucination_rate,coverage,extra_calls,latency_ms
-- `ablation.csv`: model,benchmark,variant,auroc,macro_f1,aurc
-- `statistics.json`: paired comparisons, confidence intervals, multiple-test correction
-- `provenance.json`: git/model/data/prompt/environment hashes
+Official runs should export at minimum:
 
-No paper table may be populated from synthetic artifacts.
+- `source_attribution.csv`: model,dataset,method,visual_f1,integration_f1,reasoning_f1,macro_f1
+- `failure_calibration.csv`: model,dataset,method,auroc,auprc,ece,brier,aurc
+- `intervention.csv`: model,dataset,policy,accuracy,hallucination_rate,coverage,extra_calls,latency_ms
+- `ablation.csv`: model,dataset,variant,metric,value
+- `risk_coverage.csv`: model,dataset,method,coverage,selective_risk
+- `statistics.json`: paired tests, bootstrap CIs, correction method, seeds
+- `compute.json`: GPU, VRAM, wall time, tokens, forward passes
+
+Synthetic smoke artifacts must contain `synthetic_only: true` and are never manuscript inputs.

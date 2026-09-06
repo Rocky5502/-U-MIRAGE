@@ -1,14 +1,16 @@
 primary:
   family: Qwen3-VL
   model_id: Qwen/Qwen3-VL-8B-Instruct
-  revision: TBD_FREEZE_BEFORE_RUN
+  revision: TBD_FREEZE_BEFORE_OFFICIAL_RUN
 stable_reference:
   family: Qwen2.5-VL
   model_id: Qwen/Qwen2.5-VL-7B-Instruct
-  revision: TBD_FREEZE_BEFORE_RUN
+  revision: TBD_FREEZE_BEFORE_OFFICIAL_RUN
 cross_family:
   - family: InternVL3.5
     model_id: TBD_VERIFY_EXACT_RELEASE
+    revision: TBD_FREEZE_BEFORE_OFFICIAL_RUN
   - family: Molmo-2
     model_id: TBD_VERIFY_EXACT_RELEASE
+    revision: TBD_FREEZE_BEFORE_OFFICIAL_RUN
 policy: exact model IDs and immutable revisions are frozen in provenance before official experiments

@@ -1,15 +1,20 @@
-# Dataset policy
+# Dataset registry and license policy
 
-U-MIRAGE never silently vendors third-party benchmark media. Official runs pin URL/revision/access date/license and store only IDs, hashes, perturbation manifests, and permitted derivatives.
+U-MIRAGE does **not** redistribute third-party benchmark media by default.
 
-| ID | Role | Expected source |
-|---|---|---|
-| `mioh` | primary multi-image hallucination | CVPR 2026 release |
-| `vischainbench` | progressive multi-image reasoning | `eyehole/VisChainBench` |
-| `mihbench` | controlled multi-image diagnostic | `MM-Hallu/MIHBench` |
-| `rest_plus` | cross-modal inconsistency | official REST/REST+ release |
-| `hallusionbench` | generalization | official release |
-| `mmmu` | utility/generalization | official MMMU release |
-| `vlm_uqbench` | UQ stress test | 2026 release; preprint status tracked |
+| ID | Intended role | Upstream | Notes |
+|---|---|---|---|
+| `mioh` | Primary multi-image hallucination | CVPR 2026 MIOH release | Verify exact release license before caching/redistribution. |
+| `vischainbench` | Progressive multi-image reasoning | eyehole/VisChainBench | Dataset card reports CC BY 4.0; verify upstream media terms. |
+| `mihbench` | Controlled multi-image diagnostic | MM-Hallu/MIHBench | Dataset card reports CC BY 4.0; COCO image terms still apply. |
+| `rest_plus` | Cross-modal consistency | Same-Content-Different-Answers | Store only manifests unless upstream license permits more. |
+| `hallusionbench` | Generalization | HallusionBench | Public benchmark; verify each media source. |
+| `mmmu` | Utility/generalization | MMMU-Benchmark/MMMU | Repo licensing does not automatically override source-item rights. |
+| `vlm_uqbench` | UQ stress test | 2026 preprint/release | Treat as non-peer-reviewed until venue status changes. |
 
-Before any paper run: verify current licenses, freeze revisions, hash manifests, and document exclusions.
+## Required before an official run
+
+1. Record upstream URL, commit/revision, access date, and license in `configs/datasets/*.yaml`.
+2. Generate a manifest containing example IDs and SHA256 hashes.
+3. Never commit restricted/raw media to this repository.
+4. Derived perturbations must be reproducible from a transform name + parameters + seed.

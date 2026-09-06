@@ -1,8 +1,19 @@
-# Experiment protocol
+# Frozen experiment protocol
 
-1. **Pilot gate first:** 500 controlled MIRAGE-U episodes on Qwen3-VL-8B and Qwen2.5-VL-7B.
-2. Freeze model/dataset revisions and prompt templates before official runs.
-3. Report visual/integration/reasoning source attribution, failure prediction, calibration, selective risk, and action efficiency.
-4. Use paired bootstrap confidence intervals and fixed seeds; keep raw predictions for audit.
-5. Scale to additional model families only if integration uncertainty adds information beyond simple visual/reasoning baselines.
-6. Synthetic smoke artifacts are excluded from every paper result directory.
+## Gate 0 — environment
+Capture `git rev-parse HEAD`, Python/PyTorch/CUDA versions, GPU model + dedicated VRAM, OS, CPU/RAM, and model cache revisions.
+
+## Gate 1 — MIRAGE-U pilot
+Run 500–1,000 source-controlled episodes on two model families. **Do not scale** unless integration uncertainty adds predictive information beyond visual + reasoning uncertainty.
+
+## Gate 2 — benchmark sweep
+Primary: MIOH, VisChainBench, MIHBench. Generalization: REST+, HallusionBench, MMMU/Pro, VLM-UQBench where permitted.
+
+## Gate 3 — model families
+Freeze exact model revisions. Primary intended families: Qwen3-VL, Qwen2.5-VL, InternVL3.5, Molmo 2.
+
+## Gate 4 — statistics
+Paired evaluation, bootstrap confidence intervals, correction for multiple paired tests, effect sizes, and explicit seed count.
+
+## Gate 5 — paper export
+Only immutable experiment artifacts can populate manuscript tables/figures.
