@@ -52,7 +52,15 @@ pip install -e '.[dev,vlm,data,analysis]'
 python scripts/run_jsonl.py --input <pilot.jsonl> --output artifacts/pilot/qwen3vl8b --adapter qwen --model-id Qwen/Qwen3-VL-8B-Instruct --revision <FROZEN_REVISION>
 ```
 
-The runner writes raw predictions, reliability metrics, risk--coverage data, and an environment/model/dataset provenance manifest. See `docs/LOCAL_RUN.md`, `data/SCHEMA.md`, and `docs/MODEL_ADAPTERS.md`.
+The runner writes raw predictions, reliability metrics, risk--coverage data, and an environment/model/dataset provenance manifest. See `docs/LOCAL_RUN.md`, `docs/COMPUTE_PLAN.md`, `data/SCHEMA.md`, and `docs/MODEL_ADAPTERS.md`.
+
+## Compute policy
+
+The development machine is Windows 10 Pro with an NVIDIA GeForce RTX 5070 Ti, 64 GB system RAM, and a Samsung 990 PRO 2 TB SSD. NVIDIA's reference RTX 5070 Ti has 16 GB dedicated GDDR7. Windows may report a larger total GPU-memory number because shared system memory is included, so official experiment manifests must use the dedicated-memory value reported by `nvidia-smi`.
+
+Local compute is the default for smoke tests, 7B–8B pilot inference, cached features, calibration, and propagation. Rented 48–80 GB accelerators are reserved for scientifically justified final sweeps, larger model-family validation, or white-box/high-resolution runs that do not fit cleanly on local hardware. See `configs/experiments/compute_tiers.yaml`.
+
+Closed multimodal APIs are evaluation-only. API credentials must be supplied through environment variables and are never committed. Exact model IDs, dates, prompts, retry settings, and call counts are frozen for any reported API experiment.
 
 ## Repository map
 
@@ -94,6 +102,8 @@ Closed models, if used, are evaluation-only and must be frozen by exact API iden
 - Raw benchmark media is never silently modified; perturbations are specified by deterministic manifests.
 - Synthetic/CI runs are clearly separated from paper-result directories.
 - No hand-entered numbers are copied into paper tables; table builders consume exported CSV/JSON artifacts.
+- Quantization, dtype, attention backend, image-resolution policy, dedicated VRAM, wall time, and peak memory are frozen for official runs.
+- Cloud GPU rental and API use require an experiment ID and must not be used to compensate for an unvalidated hypothesis.
 
 ## License
 
