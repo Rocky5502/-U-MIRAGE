@@ -1,6 +1,7 @@
 status: pre_results_frozen
 venue: CVPR_2027
 project: U-MIRAGE
+paper_freeze_version: v6
 
 submission_timing:
   official_2027_paper_deadline_posted: false
@@ -31,8 +32,8 @@ benchmarks:
   generalization:
     - HallusionBench
     - REST_plus
+    - OMIBench
     - MMMU_or_MMMU_Pro
-    - VLM-UQBench_if_license_and_eval_protocol_allow
 
 rqs:
   RQ1_source_localization:
@@ -47,7 +48,9 @@ rqs:
       - visual_f1
       - integration_f1
       - reasoning_f1
+      - clean_f1
       - source_macro_f1
+      - source_selectivity
       - implicated_image_accuracy
     mandatory_baselines:
       - scalar_generated_token_confidence
@@ -55,6 +58,10 @@ rqs:
       - verbalized_confidence
       - self_consistency
       - leave_one_image_out_without_propagation
+    secondary_peer_reviewed_comparisons_when_reproducible:
+      - vl_calibration_visual_reasoning_confidence
+      - vispul_visual_uncertainty
+      - rur_reasoning_uncertainty
 
   RQ2_failure_prediction_and_propagation:
     question: Does explicit source-aware propagation improve failure prediction and calibration?
@@ -70,6 +77,7 @@ rqs:
       - brier
       - aurc
       - selective_risk
+      - coverage_at_target_risk
     mandatory_baselines:
       - scalar_generated_token_confidence
       - token_entropy
@@ -80,6 +88,9 @@ rqs:
       - reasoning_uncertainty_only
       - unpropagated_source_vector
       - generic_weighted_risk
+      - vilu_when_reproducible
+      - vl_calibration_when_reproducible
+      - dropout_decoding_when_reproducible
 
   RQ3_source_conditioned_intervention:
     question: Do source-conditioned actions improve reliability at matched compute?
@@ -98,15 +109,22 @@ rqs:
     primary_metrics:
       - post_intervention_accuracy
       - hallucination_rate
+      - aurc
+      - coverage
       - recovered_accuracy_per_extra_call
       - mean_extra_calls
+      - vision_tokens
+      - generation_tokens
       - latency_ms
     mandatory_baselines:
       - answer_only
       - global_abstain_threshold
       - generic_verify
       - generic_requery
+      - random_source_action
+      - scalar_uncertainty_same_controller
       - source_conditioned_umirage
+      - oracle_source_action
     matching_rule: Compare methods at identical extra-call budgets and identical base episodes.
 
   RQ4_generalization:
@@ -116,11 +134,14 @@ rqs:
       - leave_one_dataset_out
       - image_count_2_vs_3_to_4_vs_5_plus
       - corruption_severity_shift
+      - black_box_vs_white_box
     primary_metrics:
       - source_macro_f1
+      - source_selectivity
       - auroc
       - aurc
       - calibration_shift
+      - relative_degradation
 
 mandatory_ablations:
   - remove_visual_source
@@ -131,6 +152,8 @@ mandatory_ablations:
   - no_leave_one_image_out_probe
   - no_image_order_probe
   - no_reasoning_counterfactual
+  - loo_only
+  - scalar_uncertainty_same_controller
   - generic_action_policy
   - fixed_abstention_only
 
@@ -153,19 +176,32 @@ pilot_scale_ladder:
 
 pilot_go_rules:
   source_separability:
-    requirement: integration signal adds predictive information beyond visual and reasoning signals
+    requirement: intended source interventions have positive selectivity and integration adds information beyond visual and reasoning signals
   source_localization:
     requirement: macro-F1 materially exceeds majority-source and scalar-confidence baselines
   propagation:
-    requirement: improves AUROC or AURC without materially worsening calibration
+    requirement: improves AUROC or AURC over the same source vector without propagation and does not materially worsen calibration
   intervention:
     requirement: source-conditioned policy beats generic verification at matched extra-call budget
 
 artifact_contract:
   immutable_inputs: true
+  initialize_empty_paper_outputs_with: scripts/init_paper_results.py
   save_predictions_jsonl: true
   save_metrics_json: true
   save_risk_coverage_json: true
   save_statistics_json: true
   save_provenance_json: true
+  paper_outputs:
+    - source_attribution.csv
+    - source_selectivity.csv
+    - failure_calibration.csv
+    - intervention.csv
+    - ablation.csv
+    - transfer.csv
+    - risk_coverage.csv
+    - source_confusion.csv
+    - statistics.json
+    - compute.json
   manuscript_values_must_be_generated_from_artifacts: true
+  synthetic_values_forbidden_in_manuscript: true
