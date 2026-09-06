@@ -1,8 +1,10 @@
 from __future__ import annotations
-from dataclasses import dataclass, field, asdict
+
+from dataclasses import asdict, dataclass, field
 from typing import Any
 
 VALID_SOURCES = {"clean", "visual", "integration", "reasoning"}
+
 
 @dataclass(frozen=True)
 class Episode:
@@ -19,6 +21,7 @@ class Episode:
         if not self.images:
             raise ValueError("episode must contain at least one image reference")
 
+
 @dataclass(frozen=True)
 class ModelOutput:
     answer: str
@@ -26,6 +29,7 @@ class ModelOutput:
     token_entropy: float
     evidence_scores: tuple[float, ...]
     metadata: dict[str, Any] = field(default_factory=dict)
+
 
 @dataclass(frozen=True)
 class UncertaintyState:
@@ -35,6 +39,7 @@ class UncertaintyState:
     risk: float
     source_posterior: dict[str, float]
     action: str
+    diagnostics: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
