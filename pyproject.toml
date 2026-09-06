@@ -24,6 +24,7 @@ vlm = [
   "pillow>=10",
   "qwen-vl-utils>=0.0.8",
 ]
+quant = ["bitsandbytes>=0.45"]
 data = ["datasets>=3.0", "pillow>=10"]
 analysis = ["pandas>=2.2", "scikit-learn>=1.5", "matplotlib>=3.9"]
 

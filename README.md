@@ -4,7 +4,7 @@
 
 U-MIRAGE is a research codebase for studying **where uncertainty originates** in multi-image VLM reasoning and how it propagates from visual evidence, through cross-image integration, to downstream reasoning and final answer risk.
 
-> Status: **research foundation / pre-experiment**. The repository is fully executable on synthetic examples and includes production interfaces for real VLMs and benchmarks. No paper result is claimed until the frozen experiment suite is run.
+> Status: **CVPR 2027 pre-experiment freeze / local execution ready**. The repository is executable on synthetic examples, has real-model adapters and deterministic local GPU gates, and claims no paper result until the frozen experiment suite is run.
 
 ## Scientific contract
 
@@ -14,86 +14,125 @@ U-MIRAGE separates three uncertainty sources:
 2. **Integration uncertainty** — images are individually interpretable, but their joint evidence is unstable/conflicting.
 3. **Reasoning uncertainty** — evidence is adequate, but composition/inference is unreliable.
 
-The system emits a calibrated risk estimate, a source posterior, and a source-conditioned action recommendation.
+The system emits a risk estimate, a source posterior, and a source-conditioned action recommendation. The first confirmatory implementation is intentionally transparent/non-learned; a learned propagator is considered only after the 500-example pilot establishes source separability and leaves a reproducible gap.
 
-## Quick start
+## Quick start — local kitchen
 
-```bash
-python -m venv .venv
-# Windows: .venv\\Scripts\\activate
-# Linux/macOS: source .venv/bin/activate
-pip install -e .[dev]
-python scripts/make_demo_data.py
-python scripts/run_smoke.py
-pytest -q
-```
-
-Smoke artifacts are written to `artifacts/smoke/` and are **not paper results**.
-
-## Real-model setup
+For the Windows lab machine, prefer WSL2 Ubuntu for final reproducible runs.
 
 ```bash
-pip install -e .[vlm]
-python -m umirage.cli registry
-python -m umirage.cli run \
-  --dataset data/examples/mirage_demo.jsonl \
-  --adapter mock \
-  --output artifacts/dev/run.jsonl
+git checkout agent/pilot-decision-core-v1
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -e '.[dev,vlm,data,analysis,quant]'
+
+python scripts/local_kitchen.py doctor --require-cuda
+python scripts/local_kitchen.py mock
 ```
 
-The `transformers` adapter supports local Hugging Face VLM checkpoints when installed with the `vlm` extra. For the paper, model/checkpoint IDs will be frozen in `configs/models/` before the first official run.
+The hardware doctor records the real Python/PyTorch/CUDA/GPU/VRAM/git state. Synthetic smoke artifacts are **not paper results**.
 
-## Real pilot runner
+## Real-model compatibility ladder
 
-For real local inference use the canonical JSONL runner; start with 20 examples before scaling:
+Materialize one deterministic MIHBench cohort:
 
 ```bash
-pip install -e '.[dev,vlm,data,analysis]'
-python scripts/run_jsonl.py --input <pilot.jsonl> --output artifacts/pilot/qwen3vl8b --adapter qwen --model-id Qwen/Qwen3-VL-8B-Instruct --revision <FROZEN_REVISION>
+python scripts/materialize_mihbench_pilot.py --limit 1000 --seed 27
 ```
 
-The runner writes raw predictions, reliability metrics, risk--coverage data, and an environment/model/dataset provenance manifest. See `docs/LOCAL_RUN.md`, `data/SCHEMA.md`, and `docs/MODEL_ADAPTERS.md`.
+This writes the canonical compatibility input to:
+
+`data/materialized/mihbench_pilot/episodes.jsonl`
+
+Then run the first real gate:
+
+```bash
+python scripts/local_kitchen.py gate \
+  --size 20 \
+  --model-id Qwen/Qwen3-VL-8B-Instruct \
+  --dtype bfloat16 \
+  --quantization 4bit
+```
+
+Progress only after inspection:
+
+```bash
+python scripts/local_kitchen.py gate --size 50  --model-id Qwen/Qwen3-VL-8B-Instruct --dtype bfloat16 --quantization 4bit
+python scripts/local_kitchen.py gate --size 100 --model-id Qwen/Qwen3-VL-8B-Instruct --dtype bfloat16 --quantization 4bit
+```
+
+Repeat the compatibility ladder for `Qwen/Qwen2.5-VL-7B-Instruct`.
+
+MIHBench is a compatibility/external benchmark path. The **500+ scientific pilot must use a frozen source-balanced MIRAGE-U JSONL** passed explicitly with `--input`, and `scripts/local_kitchen.py` requires a frozen model revision for that stage.
+
+See `docs/LOCAL_RUN.md` for the exact run contract.
+
+## Real runner guarantees
+
+The real runner supports:
+
+- deterministic gate limits on one immutable input manifest;
+- Qwen and generic Transformers image-text adapters;
+- explicit BF16/FP16/FP32/auto dtype;
+- optional 4-bit or 8-bit loading;
+- generated-token probability confidence rather than vocabulary-max confidence;
+- normalized predictive entropy;
+- raw leave-one-image-out, image-order, and reasoning counterfactual diagnostics;
+- run-level hardware, launch, model, dataset, and configuration provenance.
+
+A completed local run contains `launch.json`, `hardware.json`, `predictions.jsonl`, `metrics.json`, `risk_coverage.json`, `provenance.json`, and `COMPLETE`.
+
+## Paper-result contract
+
+The v6 manuscript is synchronized with the repository and contains no synthetic or placeholder empirical values. Initialize empty paper-facing artifacts with:
+
+```bash
+python scripts/init_paper_results.py --output-dir results/paper
+```
+
+Canonical outputs include source attribution/selectivity, calibration, intervention, ablation, transfer, risk-coverage, confusion, statistics, and compute artifacts. No manuscript number is official unless it is reproducible from immutable run artifacts.
+
+## Compute policy
+
+The development machine is Windows 10 Pro with an NVIDIA GeForce RTX 5070 Ti, 64 GB system RAM, and a Samsung 990 PRO 2 TB SSD. NVIDIA's reference RTX 5070 Ti has 16 GB dedicated GDDR7. Windows may report a larger total GPU-memory number because shared system memory is included, so official experiment manifests use the dedicated-memory value reported by `nvidia-smi` / PyTorch.
+
+Local compute is the default for smoke tests, 7B–8B pilot inference, cached features, calibration, and propagation. Rented 24–32/48/80 GB accelerators are reserved for scientifically justified compatibility or final sweeps after the pilot demonstrates value. See `docs/COMPUTE_PLAN.md`, `configs/experiments/compute_tiers.yaml`, and `configs/experiments/local_kitchen.yaml`.
+
+Closed multimodal APIs are external validation only. API credentials are supplied through environment variables and are never committed. Exact model IDs, dates, prompts, retry settings, and call counts are frozen for any reported API experiment.
 
 ## Repository map
 
 ```text
 configs/                 frozen experiment/model/dataset configs
 src/umirage/             package code
-  adapters/              mock + optional Transformers VLM adapters
+  adapters/              mock + real VLM adapters
   signals/               visual/integration/reasoning uncertainty
   propagation.py         source-aware uncertainty propagation
   intervention.py        source-conditioned action policy
-  datasets.py            benchmark registry + JSONL schema
   evaluation.py          reliability/calibration metrics
-scripts/                 data preparation and smoke-run entry points
+  statistics.py          paired bootstrap / McNemar / Holm utilities
+scripts/                 materializers, local kitchen, analysis and smoke entry points
 tests/                   deterministic unit/integration tests
-data/                     manifests/examples only; no restricted media
+data/                     manifests/examples/local materializations; no redistributed restricted media
 artifacts/                generated outputs (git-ignored except schema docs)
-docs/                     experiment protocol and reproducibility notes
+docs/                     experiment protocol, paper freeze and reproducibility notes
 ```
 
-## Planned benchmark suite
+## Frozen benchmark/model plan
 
-Primary: **MIOH**, **VisChainBench**, **MIHBench**, **REST/REST+**.  
-Generalization: HallusionBench, MMMU/MMMU-Pro, VLM-UQBench, HalLoc where release terms permit.
+Compatibility starts with MIHBench. The source-controlled scientific pilot uses MIRAGE-U. Primary external evaluation then prioritizes MIOH, VisChainBench and MIHBench, followed by selected transfer benchmarks where release terms and protocol fit.
 
-See [`data/DATASETS.md`](data/DATASETS.md) before downloading or redistributing any data.
-
-## Planned model families
-
-- Qwen3-VL (8B-class primary)
-- Qwen2.5-VL 7B
-- InternVL3.5 (8B-class)
-- Molmo 2 (8B/open variant)
-
-Closed models, if used, are evaluation-only and must be frozen by exact API identifier/date in the experiment manifest.
+Primary model families are Qwen3-VL-8B and Qwen2.5-VL-7B; additional InternVL/Molmo-class families are added only after the two-model scientific gate passes.
 
 ## Reproducibility rules
 
-- Every official run gets a manifest containing git SHA, model ID/revision, dataset manifest hash, seed, prompt hash, generation settings, environment, and hardware.
-- Raw benchmark media is never silently modified; perturbations are specified by deterministic manifests.
-- Synthetic/CI runs are clearly separated from paper-result directories.
-- No hand-entered numbers are copied into paper tables; table builders consume exported CSV/JSON artifacts.
+- Every official run records git SHA, model ID/revision, dataset input hash, prompt/generation settings, dtype/quantization, environment, and hardware.
+- Raw benchmark media is never silently modified; perturbations are deterministic and manifest-driven.
+- Synthetic/CI outputs are separated from paper-result directories.
+- No hand-entered numbers are copied into manuscript tables or plots.
+- OOM/config changes create a new recorded run; image count/resolution/precision are never silently altered.
+- Cloud GPU rental and API use require scientific justification and experiment provenance.
 
 ## License
 

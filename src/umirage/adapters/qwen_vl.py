@@ -56,7 +56,8 @@ class QwenVLAdapter(TransformersVLMAdapter):
         input_len = int(inputs["input_ids"].shape[-1]) if "input_ids" in inputs else 0
         generated = out.sequences[:, input_len:] if input_len else out.sequences
         answer = self.processor.batch_decode(generated, skip_special_tokens=True)[0].strip()
-        confidence, entropy = self._score_generation(out.scores)
+        generated_token_ids = generated[0].detach().cpu().tolist()
+        confidence, entropy = self._score_generation(out.scores, generated_token_ids)
         return ModelOutput(
             answer,
             confidence,
@@ -64,9 +65,10 @@ class QwenVLAdapter(TransformersVLMAdapter):
             tuple([confidence] * len(paths)),
             {
                 "real_model": True,
-                "model_id": self.model_id,
-                "revision": self.revision,
+                **self.runtime_metadata(),
                 "image_indices": tuple(idx),
                 "prompt_variant": prompt_variant,
+                "confidence_definition": "geometric_mean_generated_token_probability",
+                "entropy_definition": "mean_normalized_predictive_entropy",
             },
         )

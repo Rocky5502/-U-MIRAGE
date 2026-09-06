@@ -1,0 +1,57 @@
+status: local_execution_frozen
+project: U-MIRAGE
+venue: CVPR_2027
+
+machine_assumption:
+  operating_system: Windows_10_Pro
+  recommended_runtime: WSL2_Ubuntu
+  gpu: NVIDIA_GeForce_RTX_5070_Ti
+  dedicated_vram_gib: 16
+  windows_total_gpu_memory_note: may_include_shared_system_ram
+  ram_gib: 64
+  storage: Samsung_990_PRO_2TB
+  cpu: Intel_exact_model_tbd
+
+execution_order:
+  - doctor
+  - mock
+  - gate_20
+  - gate_50
+  - gate_100
+  - confirmatory_500
+  - optional_1000
+
+local_defaults:
+  adapter: qwen
+  model_id: Qwen/Qwen3-VL-8B-Instruct
+  dtype: bfloat16
+  quantization: 4bit
+  device_map: auto
+  max_new_tokens: 128
+  deterministic_decoding: true
+  batch_size: 1
+
+second_model:
+  model_id: Qwen/Qwen2.5-VL-7B-Instruct
+  adapter: qwen
+
+confirmatory_rules:
+  require_frozen_revision: true
+  require_hardware_manifest: true
+  require_input_sha256: true
+  require_predictions_jsonl: true
+  require_metrics_json: true
+  require_risk_coverage_json: true
+  require_provenance_json: true
+  forbid_manual_result_copy: true
+
+stop_rules:
+  - stop_on_cuda_unavailable
+  - stop_on_oom_without_config_change_record
+  - stop_if_raw_diagnostics_missing
+  - stop_if_generated_token_confidence_missing
+  - stop_if_source_labels_or_episode_ids_drift
+
+cloud_escalation:
+  enabled_only_after_pilot_need: true
+  tiers_gib: [24, 32, 48, 80]

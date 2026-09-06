@@ -1,0 +1,207 @@
+status: pre_results_frozen
+venue: CVPR_2027
+project: U-MIRAGE
+paper_freeze_version: v6
+
+submission_timing:
+  official_2027_paper_deadline_posted: false
+  planning_assumption_only:
+    abstract_window: early_november_2026
+    paper_window: mid_november_2026
+  internal_freeze_target: 2026-11-01
+
+models:
+  pilot_primary:
+    - Qwen/Qwen3-VL-8B-Instruct
+    - Qwen/Qwen2.5-VL-7B-Instruct
+  full_open:
+    - Qwen/Qwen3-VL-8B-Instruct
+    - Qwen/Qwen2.5-VL-7B-Instruct
+    - OpenGVLab/InternVL3_5-8B
+    - allenai/Molmo-2-8B
+  closed_eval_only:
+    - one_current_frontier_api_model
+
+benchmarks:
+  source_controlled:
+    - MIRAGE-U
+  primary_external:
+    - MIOH
+    - VisChainBench
+    - MIHBench
+  generalization:
+    - HallusionBench
+    - REST_plus
+    - OMIBench
+    - MMMU_or_MMMU_Pro
+
+rqs:
+  RQ1_source_localization:
+    question: Can uncertainty identify visual, cross-image integration, and reasoning failure sources?
+    datasets:
+      - MIRAGE-U
+      - MIHBench
+    models:
+      - Qwen/Qwen3-VL-8B-Instruct
+      - Qwen/Qwen2.5-VL-7B-Instruct
+    primary_metrics:
+      - visual_f1
+      - integration_f1
+      - reasoning_f1
+      - clean_f1
+      - source_macro_f1
+      - source_selectivity
+      - implicated_image_accuracy
+    mandatory_baselines:
+      - scalar_generated_token_confidence
+      - token_entropy
+      - verbalized_confidence
+      - self_consistency
+      - leave_one_image_out_without_propagation
+    secondary_peer_reviewed_comparisons_when_reproducible:
+      - vl_calibration_visual_reasoning_confidence
+      - vispul_visual_uncertainty
+      - rur_reasoning_uncertainty
+
+  RQ2_failure_prediction_and_propagation:
+    question: Does explicit source-aware propagation improve failure prediction and calibration?
+    datasets:
+      - MIOH
+      - VisChainBench
+      - MIHBench
+    models: full_open
+    primary_metrics:
+      - auroc
+      - auprc
+      - ece
+      - brier
+      - aurc
+      - selective_risk
+      - coverage_at_target_risk
+    mandatory_baselines:
+      - scalar_generated_token_confidence
+      - token_entropy
+      - self_consistency
+      - semantic_entropy_style
+      - visual_uncertainty_only
+      - integration_uncertainty_only
+      - reasoning_uncertainty_only
+      - unpropagated_source_vector
+      - generic_weighted_risk
+      - vilu_when_reproducible
+      - vl_calibration_when_reproducible
+      - dropout_decoding_when_reproducible
+
+  RQ3_source_conditioned_intervention:
+    question: Do source-conditioned actions improve reliability at matched compute?
+    datasets:
+      - MIRAGE-U
+      - MIOH
+      - VisChainBench
+    models:
+      - Qwen/Qwen3-VL-8B-Instruct
+      - Qwen/Qwen2.5-VL-7B-Instruct
+    budgets:
+      extra_model_calls:
+        - 0
+        - 1
+        - 2
+    primary_metrics:
+      - post_intervention_accuracy
+      - hallucination_rate
+      - aurc
+      - coverage
+      - recovered_accuracy_per_extra_call
+      - mean_extra_calls
+      - vision_tokens
+      - generation_tokens
+      - latency_ms
+    mandatory_baselines:
+      - answer_only
+      - global_abstain_threshold
+      - generic_verify
+      - generic_requery
+      - random_source_action
+      - scalar_uncertainty_same_controller
+      - source_conditioned_umirage
+      - oracle_source_action
+    matching_rule: Compare methods at identical extra-call budgets and identical base episodes.
+
+  RQ4_generalization:
+    question: Does the source pathway transfer across models, datasets, and image counts?
+    tests:
+      - leave_one_model_family_out
+      - leave_one_dataset_out
+      - image_count_2_vs_3_to_4_vs_5_plus
+      - corruption_severity_shift
+      - black_box_vs_white_box
+    primary_metrics:
+      - source_macro_f1
+      - source_selectivity
+      - auroc
+      - aurc
+      - calibration_shift
+      - relative_degradation
+
+mandatory_ablations:
+  - remove_visual_source
+  - remove_integration_source
+  - remove_reasoning_source
+  - no_propagation
+  - equal_source_weights
+  - no_leave_one_image_out_probe
+  - no_image_order_probe
+  - no_reasoning_counterfactual
+  - loo_only
+  - scalar_uncertainty_same_controller
+  - generic_action_policy
+  - fixed_abstention_only
+
+statistics:
+  pairing_key: id
+  bootstrap_samples: 5000
+  bootstrap_seed: 27
+  confidence_level: 0.95
+  paired_accuracy_test: exact_mcnemar
+  multiple_test_correction: holm_bonferroni
+  report_effect_size: true
+  report_confidence_intervals: true
+
+pilot_scale_ladder:
+  - 20
+  - 50
+  - 100
+  - 500
+  - 1000
+
+pilot_go_rules:
+  source_separability:
+    requirement: intended source interventions have positive selectivity and integration adds information beyond visual and reasoning signals
+  source_localization:
+    requirement: macro-F1 materially exceeds majority-source and scalar-confidence baselines
+  propagation:
+    requirement: improves AUROC or AURC over the same source vector without propagation and does not materially worsen calibration
+  intervention:
+    requirement: source-conditioned policy beats generic verification at matched extra-call budget
+
+artifact_contract:
+  immutable_inputs: true
+  initialize_empty_paper_outputs_with: scripts/init_paper_results.py
+  save_predictions_jsonl: true
+  save_metrics_json: true
+  save_risk_coverage_json: true
+  save_statistics_json: true
+  save_provenance_json: true
+  paper_outputs:
+    - source_attribution.csv
+    - source_selectivity.csv
+    - failure_calibration.csv
+    - intervention.csv
+    - ablation.csv
+    - transfer.csv
+    - risk_coverage.csv
+    - source_confusion.csv
+    - statistics.json
+    - compute.json
+  manuscript_values_must_be_generated_from_artifacts: true
+  synthetic_values_forbidden_in_manuscript: true

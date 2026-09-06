@@ -1,0 +1,66 @@
+local_machine:
+  os: "Windows 10 Pro"
+  preferred_runtime: "WSL2 Ubuntu"
+  gpu:
+    name: "NVIDIA GeForce RTX 5070 Ti"
+    architecture: "Blackwell"
+    dedicated_vram_gb_reference: 16
+    windows_total_gpu_memory_gb_reported: 48
+    verify_with_nvidia_smi: true
+  ram_gb: 64
+  storage: "Samsung SSD 990 PRO 2TB"
+  cpu: "Intel (exact model TBD)"
+
+run_policy:
+  no_full_vlm_finetuning: true
+  stop_on_oom: true
+  record_quantization: true
+  record_dtype: true
+  record_attention_backend: true
+  record_processor_settings: true
+  record_peak_vram: true
+  record_wall_time: true
+
+compute_tiers:
+  L0:
+    purpose: ["unit_tests", "mock_runs", "schema_validation", "plotting"]
+  L1:
+    hardware: "local RTX 5070 Ti 16GB dedicated VRAM"
+    purpose:
+      - "Qwen2.5-VL-7B smoke/pilot"
+      - "Qwen3-VL-8B smoke/pilot"
+      - "4bit_or_8bit_inference"
+      - "cached_feature_extraction"
+      - "calibration_and_propagation_training"
+    default_batch_size: 1
+  C1:
+    hardware: "rented 24-32GB GPU"
+    trigger: "specific model/input configuration does not fit L1 cleanly"
+  C2:
+    hardware: "rented 48GB GPU"
+    trigger: "final 7B-13B sweeps, larger image counts, or BF16 white-box extraction"
+  C3:
+    hardware: "rented 80GB GPU (A100/H100-class or equivalent)"
+    trigger: "larger-model validation or dense final sweeps with clear scientific value"
+
+cloud:
+  provider_operational_option: "AI Galaxy"
+  require_experiment_id_before_rental: true
+  record_provider_instance_and_cost_in_internal_provenance: true
+
+api_evaluation:
+  role: "evaluation-only"
+  openai_compatible: true
+  env:
+    base_url: "UMIRAGE_API_BASE_URL"
+    api_key: "UMIRAGE_API_KEY"
+    model: "UMIRAGE_API_MODEL"
+  commit_api_keys: false
+  freeze_model_id_and_date: true
+
+scale_gate:
+  require_integration_source_separability: true
+  require_risk_gain_over_best_scalar_component: true
+  require_source_conditioned_gain_at_matched_cost: true
+  require_cross_model_directional_consistency: true
+  require_label_reliability: true
