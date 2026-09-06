@@ -20,6 +20,7 @@ def run_experiment(
     adapter,
     output_dir: str | Path,
     config: dict | None = None,
+    limit: int | None = None,
 ) -> dict:
     input_jsonl = Path(input_jsonl)
     output_dir = Path(output_dir)
@@ -27,13 +28,16 @@ def run_experiment(
     config = dict(config or {})
 
     episodes = load_jsonl(input_jsonl)
+    if limit is not None:
+        if limit <= 0:
+            raise ValueError("limit must be a positive integer")
+        episodes = episodes[:limit]
+
     rows = run_episodes(episodes, adapter)
     dump_jsonl(output_dir / "predictions.jsonl", rows)
 
     metrics = summarize(rows)
-    metrics["synthetic_only"] = all(
-        bool(getattr(adapter, "name", "").startswith("mock")) for _ in [0]
-    )
+    metrics["synthetic_only"] = bool(getattr(adapter, "name", "").startswith("mock"))
     (output_dir / "metrics.json").write_text(
         json.dumps(metrics, indent=2, sort_keys=True), encoding="utf-8"
     )
@@ -48,6 +52,7 @@ def run_experiment(
         "adapter": getattr(adapter, "name", adapter.__class__.__name__),
         "input_jsonl": str(input_jsonl),
         "input_sha256": sha256_file(input_jsonl),
+        "requested_limit": limit,
         "config_sha256": _json_hash(config),
         "n_examples": len(rows),
     }
