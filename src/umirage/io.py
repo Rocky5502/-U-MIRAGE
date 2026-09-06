@@ -1,28 +1,35 @@
 from __future__ import annotations
-import hashlib, json
+
+import hashlib
+import json
 from pathlib import Path
+
 from .schema import Episode
 
+
 def load_jsonl(path: str | Path) -> list[Episode]:
-    rows=[]
-    with Path(path).open(encoding="utf-8") as f:
-        for line in f:
+    rows = []
+    with Path(path).open(encoding="utf-8") as handle:
+        for line in handle:
             if not line.strip():
                 continue
-            x=json.loads(line)
-            x["images"]=tuple(x["images"])
-            rows.append(Episode(**x))
+            row = json.loads(line)
+            row["images"] = tuple(row["images"])
+            rows.append(Episode(**row))
     return rows
 
+
 def dump_jsonl(path: str | Path, rows: list[dict]) -> None:
-    p=Path(path); p.parent.mkdir(parents=True, exist_ok=True)
-    with p.open("w", encoding="utf-8") as f:
+    output_path = Path(path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with output_path.open("w", encoding="utf-8") as handle:
         for row in rows:
-            f.write(json.dumps(row, sort_keys=True)+"\n")
+            handle.write(json.dumps(row, sort_keys=True) + "\n")
+
 
 def sha256_file(path: str | Path) -> str:
-    h=hashlib.sha256()
-    with Path(path).open("rb") as f:
-        for chunk in iter(lambda: f.read(1<<20), b""):
-            h.update(chunk)
-    return h.hexdigest()
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1 << 20), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
