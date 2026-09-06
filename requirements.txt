@@ -1,0 +1,2 @@
+# Core is stdlib-only. For development: pip install -e .[dev]
+# For local VLMs: pip install -e .[vlm]
