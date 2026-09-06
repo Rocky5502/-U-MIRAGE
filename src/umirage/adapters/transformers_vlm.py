@@ -50,19 +50,42 @@ class TransformersVLMAdapter:
         }
         return f"{question}\n{suffixes.get(variant, 'Answer concisely and ground the answer in the images.')}"
 
-    def _score_generation(self, scores) -> tuple[float, float]:
-        confidences: list[float] = []
+    def _score_generation(self, scores, generated_token_ids) -> tuple[float, float]:
+        """Return sequence confidence and normalized predictive entropy.
+
+        Confidence must correspond to what the model actually emitted.  Using
+        the maximum vocabulary probability at each step can overstate confidence
+        whenever the generated token is not the argmax (or when generation
+        behavior changes).  We therefore gather the probability assigned to the
+        generated token at each step and aggregate those probabilities with a
+        geometric mean, which is length-normalized and numerically stable.
+        """
+
+        token_log_probs: list[float] = []
         entropies: list[float] = []
-        for score in scores or ():
+        token_ids = [int(token_id) for token_id in generated_token_ids]
+
+        for step, score in enumerate(scores or ()):
+            if step >= len(token_ids):
+                break
             probs = self.torch.softmax(score[0].float(), dim=-1)
-            confidences.append(float(probs.max().item()))
+            token_id = token_ids[step]
+            if token_id < 0 or token_id >= probs.numel():
+                continue
+            token_prob = float(probs[token_id].clamp_min(1e-12).item())
+            token_log_probs.append(math.log(token_prob))
+
             raw_h = -(probs * probs.clamp_min(1e-12).log()).sum()
             denom = math.log(max(2, probs.numel()))
             entropies.append(float(raw_h.item() / denom))
-        return (
-            sum(confidences) / len(confidences) if confidences else 0.5,
-            sum(entropies) / len(entropies) if entropies else 0.5,
+
+        confidence = (
+            math.exp(sum(token_log_probs) / len(token_log_probs))
+            if token_log_probs
+            else 0.5
         )
+        entropy = sum(entropies) / len(entropies) if entropies else 0.5
+        return max(0.0, min(1.0, confidence)), max(0.0, min(1.0, entropy))
 
     def answer(self, episode: Episode, *, image_indices=None, order=None, prompt_variant=0) -> ModelOutput:
         from PIL import Image
@@ -104,12 +127,13 @@ class TransformersVLMAdapter:
         input_len = int(inputs["input_ids"].shape[-1]) if "input_ids" in inputs else 0
         generated = out.sequences[:, input_len:] if input_len else out.sequences
         text = self.processor.batch_decode(generated, skip_special_tokens=True)[0].strip()
+        generated_token_ids = generated[0].detach().cpu().tolist()
 
-        confidence, entropy = self._score_generation(out.scores)
+        confidence, entropy = self._score_generation(out.scores, generated_token_ids)
         return ModelOutput(
             text,
             confidence,
-            max(0.0, min(1.0, entropy)),
+            entropy,
             tuple([confidence] * len(images)),
             {
                 "real_model": True,
@@ -117,5 +141,7 @@ class TransformersVLMAdapter:
                 "revision": self.revision,
                 "image_indices": tuple(idx),
                 "prompt_variant": prompt_variant,
+                "confidence_definition": "geometric_mean_generated_token_probability",
+                "entropy_definition": "mean_normalized_predictive_entropy",
             },
         )
