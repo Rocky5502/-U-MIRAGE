@@ -21,8 +21,18 @@ jobs:
           cat .bootstrap/part1.b64 .bootstrap/part2.b64 .bootstrap/part3.b64 > /tmp/foundation.b64
           base64 -d /tmp/foundation.b64 > /tmp/foundation.tgz
           tar -xzf /tmp/foundation.tgz -C .
+          # The GITHUB_TOKEN may not create/update workflow files from inside a workflow.
+          # CI is added separately after this foundation commit succeeds.
+          rm -f .github/workflows/ci.yml
           rm -rf .bootstrap
-          rm -f .github/workflows/bootstrap-foundation.yml
+      - name: Validate materialized tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          PYTHONPATH=src python -m compileall -q src scripts tests
+          PYTHONPATH=src python -m pytest -q
+          PYTHONPATH=src python scripts/make_demo_data.py
+          PYTHONPATH=src python scripts/run_smoke.py
       - name: Commit foundation
         shell: bash
         run: |
