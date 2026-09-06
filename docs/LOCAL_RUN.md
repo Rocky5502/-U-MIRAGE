@@ -51,9 +51,9 @@ python scripts/local_kitchen.py mock
 
 This runs tests, demo-data generation, the mock smoke path, and initializes the empty paper-facing result files. Synthetic outputs are never manuscript evidence.
 
-## 4. Materialize the deterministic MIHBench cohort
+## 4. Materialize the deterministic MIHBench compatibility cohort
 
-Materialize one cohort large enough for every local gate so all stages share the same input manifest and SHA256:
+Materialize one cohort large enough for every local compatibility gate so stages 20/50/100 share the same input manifest and SHA256:
 
 ```bash
 python scripts/materialize_mihbench_pilot.py --limit 1000 --seed 27
@@ -61,10 +61,13 @@ python scripts/materialize_mihbench_pilot.py --limit 1000 --seed 27
 
 Inspect:
 
-- `data/cache/mihbench_pilot.jsonl`
+- `data/materialized/mihbench_pilot/episodes.jsonl`
+- `data/materialized/mihbench_pilot/manifest.json`
 - local image paths
 - manifest SHA256
-- task/source balance
+- task balance
+
+MIHBench is used here as a **real-model compatibility and external-benchmark path**. Its materializer labels these existing benchmark rows as `clean`; it is not a replacement for the source-balanced MIRAGE-U scientific cohort.
 
 Do not create separate hand-edited 20/50/100 subsets. Gate size is controlled by `--size`, while provenance preserves the same full input-manifest hash.
 
@@ -79,6 +82,8 @@ python scripts/local_kitchen.py gate \
   --dtype bfloat16 \
   --quantization 4bit
 ```
+
+The default input is `data/materialized/mihbench_pilot/episodes.jsonl`.
 
 The run directory is deterministic:
 
@@ -96,7 +101,7 @@ It must contain:
 
 Inspect raw answers and diagnostics before progressing.
 
-## 6. Scale only after inspection
+## 6. Scale the compatibility gate only after inspection
 
 ```bash
 python scripts/local_kitchen.py gate --size 50  --model-id Qwen/Qwen3-VL-8B-Instruct --dtype bfloat16 --quantization 4bit
@@ -109,16 +114,23 @@ Repeat the compatibility ladder for:
 Qwen/Qwen2.5-VL-7B-Instruct
 ```
 
-For any 500+ confirmatory run, `scripts/local_kitchen.py` requires an explicit frozen `--revision`:
+## 7. 500-example scientific pilot — MIRAGE-U, not MIHBench
+
+The 500+ confirmatory pilot must use the **frozen source-balanced MIRAGE-U JSONL**, supplied explicitly with `--input`. The launcher intentionally refuses to run a 500+ gate on the default MIHBench compatibility file.
+
+It also requires an explicit frozen model `--revision`:
 
 ```bash
 python scripts/local_kitchen.py gate \
   --size 500 \
+  --input <FROZEN_MIRAGE_U_SOURCE_BALANCED_JSONL> \
   --model-id Qwen/Qwen3-VL-8B-Instruct \
   --revision <FROZEN_HF_REVISION> \
   --dtype bfloat16 \
   --quantization 4bit
 ```
+
+Before this stage, freeze MIRAGE-U IDs/source labels, human-validation split, perturbation manifest, and input SHA256.
 
 ## Precision / OOM policy
 
@@ -130,16 +142,15 @@ python scripts/local_kitchen.py gate \
 
 ## Scientific progression gate
 
-Do **not** start the four-family sweep just because the code runs. Progress from 100 to 500 only after:
+Do **not** start the four-family sweep just because the code runs. Progress from 100 compatibility cases to the MIRAGE-U 500 pilot only after:
 
 - generated-token confidence and entropy are present and plausible;
 - leave-one-image-out, image-order, and reasoning diagnostics are complete;
-- episode IDs/source labels are stable;
+- episode IDs are stable;
 - no systematic parser/answer-normalization failure is visible;
-- integration uncertainty is not trivially identical to visual uncertainty;
 - output/provenance files agree on cohort size and model settings.
 
-Do not add a learned propagation module until the 500-example pilot demonstrates source separability and the transparent propagator leaves a reproducible gap.
+Scale beyond the 500 MIRAGE-U pilot only after source selectivity and integration-source separability are measured. Do not add a learned propagation module until the transparent propagator leaves a reproducible gap.
 
 ## Cloud escalation rule
 
