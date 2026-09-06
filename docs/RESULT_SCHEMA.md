@@ -2,6 +2,16 @@
 
 Official U-MIRAGE runs must be reproducible from machine-readable artifacts. No manuscript number may be hand-entered without a corresponding frozen result artifact.
 
+## Empty pre-result bootstrap
+
+Before any confirmatory run, initialize the paper-facing directory with:
+
+```bash
+python scripts/init_paper_results.py --output-dir results/paper
+```
+
+This command creates header-only CSV files and empty JSON arrays. It creates **no empirical values**. The v6 manuscript mirrors this state: every empirical cell is visually empty until an official frozen artifact is available.
+
 ## Per-episode predictions
 
 `predictions.jsonl` is the canonical raw record. Every row must contain at least:
@@ -69,15 +79,16 @@ The default frozen policy is 5,000 paired bootstrap samples, seed 27, 95% confid
 
 ## Paper-facing aggregate artifacts
 
-Official aggregation should export at minimum:
+Official aggregation must export:
 
-- `source_attribution.csv`: `model,dataset,method,visual_f1,integration_f1,reasoning_f1,macro_f1,implicated_image_accuracy`
-- `failure_calibration.csv`: `model,dataset,method,accuracy,auroc,auprc,ece,brier,aurc`
-- `intervention.csv`: `model,dataset,policy,budget,accuracy,hallucination_rate,coverage,extra_calls,recovered_accuracy_per_extra_call,latency_ms,abstention_rate`
-- `ablation.csv`: `model,dataset,variant,metric,value`
-- `risk_coverage.csv`: `model,dataset,method,coverage,selective_risk`
-- `source_confusion.csv`: `model,dataset,true_source,predicted_source,count,rate`
-- `generalization.csv`: `train_scope,test_scope,model,dataset,image_count_bin,metric,value`
+- `source_attribution.csv`: `run_id,model,dataset,method,visual_f1,integration_f1,reasoning_f1,clean_f1,macro_f1,image_localization,seed`
+- `source_selectivity.csv`: `run_id,model,source,perturbation_family,severity,delta_visual,delta_integration,delta_reasoning,selectivity,negative_control,seed`
+- `failure_calibration.csv`: `run_id,model,dataset,method,accuracy,auroc,auprc,ece,brier,aurc,coverage_at_target_risk,seed`
+- `intervention.csv`: `run_id,model,dataset,policy,budget_calls,accuracy,hallucination_rate,aurc,coverage,extra_calls,vision_tokens,generation_tokens,latency_ms,seed`
+- `ablation.csv`: `run_id,model,dataset,variant,macro_f1,auroc,aurc,accuracy,seed`
+- `transfer.csv`: `run_id,train_model,test_model,train_dataset,test_dataset,method,macro_f1,auroc,aurc,relative_degradation`
+- `risk_coverage.csv`: `run_id,model,dataset,method,coverage,selective_risk,seed`
+- `source_confusion.csv`: `run_id,model,dataset,true_source,predicted_source,count,rate`
 - `statistics.json`: paired tests, bootstrap confidence intervals, correction method, seeds, effect sizes
 - `compute.json`: GPU, dedicated VRAM, wall time, vision tokens, generated tokens, forward passes, extra calls
 
@@ -97,5 +108,6 @@ A method may not receive additional images, prompts, model calls, or hidden judg
 6. Failed or partially completed runs must never be mixed into final aggregate artifacts without an explicit status field and documented exclusion rule.
 7. Post-hoc metric, baseline, threshold, or cohort changes after inspecting results require an explicit protocol deviation record.
 8. Statistical comparisons are paired by episode whenever methods were evaluated on the same cohort.
-9. Closed/API-model results are supplementary validation only and cannot be required for the method definition.
+9. Closed/API-model results are external validation only and cannot be required for the method definition.
 10. No result is labeled CVPR-paper-ready until its raw run, aggregate artifact, statistics artifact, and provenance all agree on cohort size and identifiers.
+11. Empty pre-result templates may contain headers/schema metadata only; they must never contain placeholder numeric values.
