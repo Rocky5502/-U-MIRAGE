@@ -65,8 +65,7 @@ class QwenVLAdapter(TransformersVLMAdapter):
             tuple([confidence] * len(paths)),
             {
                 "real_model": True,
-                "model_id": self.model_id,
-                "revision": self.revision,
+                **self.runtime_metadata(),
                 "image_indices": tuple(idx),
                 "prompt_variant": prompt_variant,
                 "confidence_definition": "geometric_mean_generated_token_probability",
