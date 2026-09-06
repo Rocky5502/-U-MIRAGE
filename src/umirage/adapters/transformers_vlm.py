@@ -19,26 +19,69 @@ class TransformersVLMAdapter:
         device_map: str = "auto",
         max_new_tokens: int = 128,
         trust_remote_code: bool = False,
+        dtype: str = "auto",
+        load_in_4bit: bool = False,
+        load_in_8bit: bool = False,
     ):
+        if load_in_4bit and load_in_8bit:
+            raise ValueError("4-bit and 8-bit loading are mutually exclusive")
+
         try:
             import torch
-            from transformers import AutoModelForImageTextToText, AutoProcessor
+            from transformers import AutoModelForImageTextToText, AutoProcessor, BitsAndBytesConfig
         except ImportError as exc:
             raise RuntimeError("Install `pip install -e .[vlm]` for real VLM inference") from exc
+
+        dtype_map = {
+            "auto": "auto",
+            "float16": torch.float16,
+            "bfloat16": torch.bfloat16,
+            "float32": torch.float32,
+        }
+        if dtype not in dtype_map:
+            raise ValueError(f"Unsupported dtype {dtype!r}; choose one of {sorted(dtype_map)}")
+
         self.torch = torch
         self.processor = AutoProcessor.from_pretrained(
             model_id, revision=revision, trust_remote_code=trust_remote_code
         )
-        self.model = AutoModelForImageTextToText.from_pretrained(
-            model_id,
-            revision=revision,
-            device_map=device_map,
-            torch_dtype="auto",
-            trust_remote_code=trust_remote_code,
-        )
+
+        model_kwargs = {
+            "revision": revision,
+            "device_map": device_map,
+            "torch_dtype": dtype_map[dtype],
+            "trust_remote_code": trust_remote_code,
+        }
+        quantization_mode = "none"
+        if load_in_4bit or load_in_8bit:
+            try:
+                import bitsandbytes  # noqa: F401
+            except ImportError as exc:
+                raise RuntimeError(
+                    "Quantized loading requires bitsandbytes; install `pip install -e .[quant]`."
+                ) from exc
+
+            quantization_mode = "4bit" if load_in_4bit else "8bit"
+            quant_kwargs = {
+                "load_in_4bit": load_in_4bit,
+                "load_in_8bit": load_in_8bit,
+            }
+            if load_in_4bit:
+                compute_dtype = dtype_map[dtype]
+                if compute_dtype == "auto" or compute_dtype == torch.float32:
+                    compute_dtype = torch.float16
+                quant_kwargs["bnb_4bit_compute_dtype"] = compute_dtype
+                quant_kwargs["bnb_4bit_quant_type"] = "nf4"
+                quant_kwargs["bnb_4bit_use_double_quant"] = True
+            model_kwargs["quantization_config"] = BitsAndBytesConfig(**quant_kwargs)
+
+        self.model = AutoModelForImageTextToText.from_pretrained(model_id, **model_kwargs)
         self.model_id = model_id
         self.revision = revision
         self.max_new_tokens = max_new_tokens
+        self.device_map = device_map
+        self.dtype = dtype
+        self.quantization_mode = quantization_mode
         self.name = model_id
 
     @staticmethod
@@ -50,13 +93,23 @@ class TransformersVLMAdapter:
         }
         return f"{question}\n{suffixes.get(variant, 'Answer concisely and ground the answer in the images.')}"
 
+    def runtime_metadata(self) -> dict:
+        return {
+            "model_id": self.model_id,
+            "revision": self.revision,
+            "dtype": self.dtype,
+            "quantization": self.quantization_mode,
+            "device_map": self.device_map,
+            "max_new_tokens": self.max_new_tokens,
+        }
+
     def _score_generation(self, scores, generated_token_ids) -> tuple[float, float]:
         """Return sequence confidence and normalized predictive entropy.
 
-        Confidence must correspond to what the model actually emitted.  Using
+        Confidence must correspond to what the model actually emitted. Using
         the maximum vocabulary probability at each step can overstate confidence
         whenever the generated token is not the argmax (or when generation
-        behavior changes).  We therefore gather the probability assigned to the
+        behavior changes). We therefore gather the probability assigned to the
         generated token at each step and aggregate those probabilities with a
         geometric mean, which is length-normalized and numerically stable.
         """
@@ -137,8 +190,7 @@ class TransformersVLMAdapter:
             tuple([confidence] * len(images)),
             {
                 "real_model": True,
-                "model_id": self.model_id,
-                "revision": self.revision,
+                **self.runtime_metadata(),
                 "image_indices": tuple(idx),
                 "prompt_variant": prompt_variant,
                 "confidence_definition": "geometric_mean_generated_token_probability",
