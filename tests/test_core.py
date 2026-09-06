@@ -1,6 +1,6 @@
-from umirage.schema import Episode
 from umirage.adapters.mock import MockMultiImageAdapter
 from umirage.pipeline import UMiragePipeline
+from umirage.schema import Episode
 
 
 def ep(source="integration"):
@@ -25,6 +25,26 @@ def test_pipeline_bounds_and_action():
         "verify_reasoning",
         "abstain",
     }
+
+
+def test_pipeline_preserves_perturbation_audit_trail():
+    _, state = UMiragePipeline(MockMultiImageAdapter()).analyze(ep())
+    diagnostics = state.diagnostics
+
+    assert diagnostics["n_images"] == 3
+    assert set(diagnostics["full"]) >= {
+        "answer",
+        "confidence",
+        "token_entropy",
+        "evidence_scores",
+        "metadata",
+    }
+    assert len(diagnostics["leave_one_out"]) == 3
+    assert {row["omitted_index"] for row in diagnostics["leave_one_out"]} == {0, 1, 2}
+    assert len(diagnostics["order_variants"]) == 1
+    assert diagnostics["order_variants"][0]["order"] == [2, 1, 0]
+    assert len(diagnostics["reasoning_variants"]) == 2
+    assert {row["prompt_variant"] for row in diagnostics["reasoning_variants"]} == {1, 2}
 
 
 def test_deterministic():
