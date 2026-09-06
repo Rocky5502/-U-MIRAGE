@@ -1,5 +1,5 @@
 from __future__ import annotations
-import hashlib, json, os, platform, subprocess, sys
+import hashlib, json, platform, subprocess, sys
 from pathlib import Path
 
 def _cmd(args):

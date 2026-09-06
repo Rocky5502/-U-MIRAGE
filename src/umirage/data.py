@@ -25,7 +25,7 @@ def dump_jsonl(path, rows):
     p.write_text("".join(json.dumps(x,sort_keys=True)+"\n" for x in rows),encoding="utf-8")
 
 def sha256_file(path):
-    h=hashlib.sha256();
+    h=hashlib.sha256()
     with Path(path).open("rb") as f:
         for b in iter(lambda:f.read(1<<20),b""): h.update(b)
     return h.hexdigest()
