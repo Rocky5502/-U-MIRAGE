@@ -1,0 +1,31 @@
+# First-party hosted provider configuration template.
+# Credentials are referenced by environment-variable name only.
+
+providers:
+  openai:
+    display_name: OpenAI
+    api_key_env: OPENAI_API_KEY
+    model_env: OPENAI_MODEL
+    docs: https://developers.openai.com/api/
+
+  anthropic:
+    display_name: Anthropic Claude
+    api_key_env: ANTHROPIC_API_KEY
+    model_env: ANTHROPIC_MODEL
+    docs: https://docs.anthropic.com/
+
+  google_gemini:
+    display_name: Google Gemini
+    api_key_env: GEMINI_API_KEY
+    model_env: GEMINI_MODEL
+    docs: https://ai.google.dev/gemini-api/docs
+
+  huggingface:
+    display_name: Hugging Face Hub
+    api_key_env: HF_TOKEN
+    docs: https://huggingface.co/docs/hub/security-tokens
+
+policy:
+  commit_credentials: false
+  freeze_exact_model_id_and_access_date_per_run: true
+  common_observable_interface_required_for_cross_provider_efficacy: true

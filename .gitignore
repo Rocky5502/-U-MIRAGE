@@ -7,10 +7,21 @@ __pycache__/
 build/
 dist/
 *.egg-info/
-.env
 .DS_Store
 .vscode/
 .idea/
+
+# Secrets / local provider credentials
+.env
+.env.*
+!.env.example
+secrets/
+credentials/
+*.pem
+*.p12
+*.pfx
+
+# Generated experiment outputs
 artifacts/**
 !artifacts/README.md
 data/raw/
