@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "u-mirage"
-version = "0.1.0"
-description = "Source-aware uncertainty propagation for multi-image vision-language reasoning"
+version = "0.2.0"
+description = "Source-aware uncertainty propagation for reliable multi-image vision-language reasoning"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
@@ -24,8 +24,14 @@ vlm = [
   "pillow>=10",
   "qwen-vl-utils>=0.0.8",
 ]
-data = ["datasets>=3.0", "pillow>=10"]
+data = ["datasets>=3.0", "pillow>=10", "huggingface-hub>=0.25"]
 analysis = ["pandas>=2.2", "scikit-learn>=1.5", "matplotlib>=3.9"]
+api = [
+  "openai>=1.0",
+  "anthropic>=0.40",
+  "google-genai>=1.0",
+  "huggingface-hub>=0.25",
+]
 
 [project.scripts]
 umirage = "umirage.cli:main"

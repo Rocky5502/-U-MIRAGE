@@ -1,7 +1,9 @@
 name: CI
+
 on:
   push:
   pull_request:
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -15,6 +17,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install --upgrade pip
       - run: pip install -e .[dev]
+      - name: Secret pattern scan
+        run: python scripts/check_secrets.py
       - run: ruff check src tests scripts
       - run: pytest -q
       - run: python scripts/make_demo_data.py && python scripts/run_smoke.py

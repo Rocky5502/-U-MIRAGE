@@ -1,3 +1,9 @@
--e .[dev]
-# For local VLM inference: pip install -e .[vlm]
-# For analysis/plots:      pip install -e .[analysis]
+# Core editable install plus development/data/analysis tooling.
+-e .[dev,data,analysis]
+
+# Optional local VLM stack:
+#   pip install -e '.[vlm]'
+# Optional official hosted-provider SDKs:
+#   pip install -e '.[api]'
+# Full research workstation:
+#   pip install -e '.[dev,vlm,data,analysis,api]'
