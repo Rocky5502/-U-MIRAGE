@@ -8,7 +8,9 @@ from pathlib import Path
 
 import numpy as np
 
-POLICIES = ("umirage", "verify", "requery", "random_source", "no_extra_call")
+PRIMARY_POLICIES = ("umirage", "verify", "requery", "random_source", "no_extra_call")
+MATRIX_POLICIES = ("force_reinspect", "force_compare", "force_reasoning")
+POLICIES = PRIMARY_POLICIES + MATRIX_POLICIES
 SOURCES = ("visual", "integration", "reasoning")
 ACTIONS = ("reinspect_image", "compare_images", "verify_reasoning")
 
@@ -48,7 +50,7 @@ def summarize(rows: list[dict]) -> dict:
 def source_repair_matrix(rows: list[dict], budget: int = 1) -> dict:
     matrix = {s: {a: {"recovered": 0, "eligible": 0} for a in ACTIONS} for s in SOURCES}
     for r in rows:
-        if int(r["budget"]) != budget:
+        if int(r["budget"]) != budget or str(r.get("policy")) not in MATRIX_POLICIES:
             continue
         source = str(r.get("source_label"))
         action = str(r.get("executed_action"))
@@ -64,6 +66,29 @@ def source_repair_matrix(rows: list[dict], budget: int = 1) -> dict:
     return matrix
 
 
+def diagonal_advantage(matrix: dict) -> dict:
+    expected = {
+        "visual": "reinspect_image",
+        "integration": "compare_images",
+        "reasoning": "verify_reasoning",
+    }
+    out = {}
+    for source, diagonal_action in expected.items():
+        diag = matrix[source][diagonal_action]["recovery_rate"]
+        off = [
+            matrix[source][action]["recovery_rate"]
+            for action in ACTIONS
+            if action != diagonal_action and matrix[source][action]["recovery_rate"] is not None
+        ]
+        out[source] = {
+            "diagonal_action": diagonal_action,
+            "diagonal_recovery_rate": diag,
+            "best_off_diagonal_recovery_rate": max(off) if off else None,
+            "diagonal_advantage": (diag - max(off)) if diag is not None and off else None,
+        }
+    return out
+
+
 def paired_group_bootstrap(rows, policy_a, policy_b, budget, n, seed):
     keep = [r for r in rows if int(r["budget"]) == budget and r["policy"] in {policy_a, policy_b}]
     keyed = defaultdict(dict)
@@ -76,14 +101,24 @@ def paired_group_bootstrap(rows, policy_a, policy_b, budget, n, seed):
         by_group[str(v[policy_a]["group_id"])].append(v)
     if not groups:
         return {"n_pairs": 0}
-    point = float(np.mean([int(v[policy_a]["correct_after"]) - int(v[policy_b]["correct_after"]) for v in pairs]))
+    point = float(np.mean([
+        int(v[policy_a]["correct_after"]) - int(v[policy_b]["correct_after"])
+        for v in pairs
+    ]))
     rng = np.random.default_rng(seed)
     boot = []
     for _ in range(n):
         sample_groups = rng.choice(groups, size=len(groups), replace=True)
         sample = [v for g in sample_groups for v in by_group[str(g)]]
-        boot.append(float(np.mean([int(v[policy_a]["correct_after"]) - int(v[policy_b]["correct_after"]) for v in sample])))
-    return {"n_pairs": len(pairs), "accuracy_difference": point, "ci95": [float(np.quantile(boot, .025)), float(np.quantile(boot, .975))]}
+        boot.append(float(np.mean([
+            int(v[policy_a]["correct_after"]) - int(v[policy_b]["correct_after"])
+            for v in sample
+        ])))
+    return {
+        "n_pairs": len(pairs),
+        "accuracy_difference": point,
+        "ci95": [float(np.quantile(boot, .025)), float(np.quantile(boot, .975))],
+    }
 
 
 def main() -> None:
@@ -94,13 +129,17 @@ def main() -> None:
     ap.add_argument("--seed", type=int, default=27)
     args = ap.parse_args()
     rows = read_jsonl(args.input)
+
     unknown = sorted({str(r["policy"]) for r in rows} - set(POLICIES))
     if unknown:
         raise SystemExit(f"STOP: unknown policies: {unknown}")
+
+    matrix = source_repair_matrix(rows, 1)
     result = {
         "mode": "protected_matched_budget_actions",
         "summary": summarize(rows),
-        "source_repair_matrix_budget1": source_repair_matrix(rows, 1),
+        "source_repair_matrix_budget1": matrix,
+        "source_repair_diagonal_advantage": diagonal_advantage(matrix),
         "paired_primary": {
             "umirage_vs_verify_b1": paired_group_bootstrap(rows, "umirage", "verify", 1, args.bootstrap, args.seed),
             "umirage_vs_requery_b1": paired_group_bootstrap(rows, "umirage", "requery", 1, args.bootstrap, args.seed),
