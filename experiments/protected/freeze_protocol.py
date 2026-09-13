@@ -31,11 +31,16 @@ def main() -> None:
         nargs="*",
         default=[
             "src/umirage/protected.py",
+            "src/umirage/propagation.py",
+            "src/umirage/adapters/base.py",
+            "src/umirage/adapters/qwen_vl.py",
+            "src/umirage/adapters/transformers_vlm.py",
+            "experiments/protected/build_rq1_matched_manifest.py",
             "experiments/protected/evaluate_rq1.py",
+            "experiments/protected/audit_leakage.py",
             "experiments/protected/evaluate_rq2.py",
             "experiments/protected/run_rq3_actions.py",
             "experiments/protected/evaluate_rq3.py",
-            "experiments/protected/audit_leakage.py",
         ],
     )
     args = ap.parse_args()
