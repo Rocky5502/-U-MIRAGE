@@ -36,6 +36,8 @@ def main() -> None:
             "src/umirage/adapters/qwen_vl.py",
             "src/umirage/adapters/transformers_vlm.py",
             "experiments/protected/build_rq1_matched_manifest.py",
+            "experiments/protected/make_rq1_annotation_sheet.py",
+            "experiments/protected/score_rq1_annotations.py",
             "experiments/protected/evaluate_rq1.py",
             "experiments/protected/audit_leakage.py",
             "experiments/protected/evaluate_rq2.py",
