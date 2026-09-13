@@ -20,7 +20,9 @@ from umirage.protected import (
     source_action_prompt,
 )
 
-POLICIES = ("umirage", "verify", "requery", "random_source", "no_extra_call")
+PRIMARY_POLICIES = ("umirage", "verify", "requery", "random_source", "no_extra_call")
+MATRIX_POLICIES = ("force_reinspect", "force_compare", "force_reasoning")
+POLICIES = PRIMARY_POLICIES + MATRIX_POLICIES
 
 
 def read_jsonl(path: str) -> list[dict]:
@@ -47,10 +49,11 @@ def make_adapter(args):
 
 def prompt_for(policy: str, predicted_source: str, question: str, call_index: int, rng):
     if policy == "umirage":
-        action = source_action(predicted_source)
-        prompt = source_action_prompt(predicted_source, question)
+        source = predicted_source
+        action = source_action(source)
+        prompt = source_action_prompt(source, question)
     elif policy == "verify":
-        action = "verify_reasoning"
+        action = "generic_verify"
         prompt = generic_verify_prompt(question)
     elif policy == "requery":
         action = "generic_requery"
@@ -59,12 +62,25 @@ def prompt_for(policy: str, predicted_source: str, question: str, call_index: in
         source = rng.choice(list(SOURCES))
         action = source_action(source)
         prompt = source_action_prompt(source, question)
+    elif policy == "force_reinspect":
+        action = source_action("visual")
+        prompt = source_action_prompt("visual", question)
+    elif policy == "force_compare":
+        action = source_action("integration")
+        prompt = source_action_prompt("integration", question)
+    elif policy == "force_reasoning":
+        action = source_action("reasoning")
+        prompt = source_action_prompt("reasoning", question)
     elif policy == "no_extra_call":
         return "none", None
     else:
         raise ValueError(policy)
+
     if call_index > 0:
-        prompt += "\n\nSecond and final allowed repair call: independently check again and return the final answer."
+        prompt += (
+            "\n\nThis is the second and final allowed repair call. "
+            "Independently check the evidence again and return the final answer."
+        )
     return action, prompt
 
 
@@ -107,6 +123,7 @@ def main() -> None:
             ep = episodes[eid]
             sr = score_rows[eid]
             predicted_source = scores_from_row(sr).argmax()
+
             t0 = time.perf_counter()
             base = adapter.answer(ep)
             base_latency = time.perf_counter() - t0
@@ -119,9 +136,12 @@ def main() -> None:
                     executed_action = "none"
                     extra_tokens = 0
                     extra_latency = 0.0
+
                     if policy != "no_extra_call":
                         for call_index in range(budget):
-                            action, prompt = prompt_for(policy, predicted_source, ep.question, call_index, rng)
+                            action, prompt = prompt_for(
+                                policy, predicted_source, ep.question, call_index, rng
+                            )
                             executed_action = action
                             t1 = time.perf_counter()
                             repaired = adapter.answer(ep, prompt_override=prompt)
@@ -137,12 +157,14 @@ def main() -> None:
                                 "input_tokens": int(repaired.metadata.get("input_tokens", 0)),
                                 "output_tokens": int(repaired.metadata.get("output_tokens", 0)),
                             })
+
                     row = {
                         "id": eid,
                         "group_id": str(sr["group_id"]),
                         "source_label": str(sr.get("source_label", ep.source_label)),
                         "predicted_source": predicted_source,
                         "policy": policy,
+                        "matrix_arm": policy in MATRIX_POLICIES,
                         "budget": budget,
                         "executed_action": executed_action,
                         "correct_before": base_correct,
@@ -155,7 +177,11 @@ def main() -> None:
                     }
                     f.write(json.dumps(row, sort_keys=True) + "\n")
                     f.flush()
-                    print(f"{eid} policy={policy} budget={budget} before={int(base_correct)} after={int(row['correct_after'])}", flush=True)
+                    print(
+                        f"{eid} policy={policy} budget={budget} "
+                        f"before={int(base_correct)} after={int(row['correct_after'])}",
+                        flush=True,
+                    )
 
 
 if __name__ == "__main__":
