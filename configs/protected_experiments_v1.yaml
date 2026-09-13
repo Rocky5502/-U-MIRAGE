@@ -40,7 +40,8 @@ rq2:
   risk_coverages: [0.7, 0.8, 0.9]
 
 rq3:
-  policies: [umirage, verify, requery, random_source, no_extra_call]
+  primary_policies: [umirage, verify, requery, random_source, no_extra_call]
+  causal_matrix_policies: [force_reinspect, force_compare, force_reasoning]
   budgets: [0, 1, 2]
   primary_metric: recovered_accuracy
   source_actions:
