@@ -14,7 +14,7 @@ The repository separates three source dimensions:
 - **Integration uncertainty** — individually interpretable evidence becomes unstable when combined across images.
 - **Reasoning uncertainty** — the evidence is adequate but the final composition or decision is unreliable.
 
-> **Research status (September 2026).** The development evaluation package and four-model transfer study are complete and auditable. The protected confirmatory RQ1/RQ2/RQ3 protocol and one-time final holdout remain deliberately separate. Development results below must not be read as final protected-holdout claims.
+> **Research status (September 2026).** The machine-only development program is complete and auditable for RQ1--RQ4, including the matched-budget RQ3 action run and the exploratory hosted executor-transfer study. These are **development results**, not final protected-holdout claims. Calibration-60 and Holdout-360 remain sealed.
 
 ## Development result snapshot
 
@@ -46,6 +46,19 @@ All four local model families below were evaluated on the **same 128 development
 </p>
 
 <p align="center"><em>Routing allocation is a diagnostic only: corrective actions were not executed in this analysis.</em></p>
+
+## Machine-only development completion snapshot
+
+The final development-stage runs preserve negative and null outcomes rather than tuning after inspection:
+
+| Study | Development finding | Claim boundary |
+|---|---|---|
+| RQ1 construction-intent stress test | Integration selectivity is approximately null; visual and reasoning selectivity are negative under the declared interventions. | Construction intent only; no human source-label validation claim. |
+| RQ2 exact same-signal propagation | AUROC 0.6862 -> 0.6838; paired delta -0.0024, 95% CI [-0.0130, 0.0085]. AURC is likewise essentially null/slightly unfavorable. | P81 development evidence; not final holdout. |
+| RQ3 matched-budget actions | Base accuracy 0.6484. Every one- and two-call repair policy produced post-action exact-match accuracy 0.0000 in this run; U-MIRAGE-vs-VERIFY/REQUERY paired differences are therefore 0.0000. | Treat as a strong execution/parsing failure signal, not evidence that all repair policies intrinsically destroy accuracy. P81 development only. |
+| Hosted executor transfer | GPT-family endpoint: no source-conditioned advantage. Gemini-family endpoint: +0.1250 vs VERIFY and +0.0625 vs REQUERY, but both 95% CIs include zero. | Exploratory 32-episode development cohort; hosted uncertainty-estimator gate remains failed/closed. |
+
+The RQ3 result is intentionally reported exactly as evaluated. Because all repair arms collapse to zero while the frozen base remains 0.6484, the repository treats this as a **diagnostic red flag requiring parser/output-contract investigation before any efficacy interpretation**. No post-hoc prompt, threshold, or policy redesign is used to turn it into a positive result.
 
 More details and claim boundaries are in [`docs/RESULTS.md`](docs/RESULTS.md).
 
