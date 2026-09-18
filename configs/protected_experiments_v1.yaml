@@ -1,0 +1,66 @@
+version: 1
+status: pre_result_freeze
+seed: 27
+bootstrap_resamples: 5000
+
+protected_partitions:
+  calibration: calibration-60
+  final_holdout: holdout-360
+  calibration_allowed_before_freeze: false
+  holdout_allowed_before_freeze: false
+  holdout_runs: 1
+
+rq1:
+  controlled_selectivity:
+    sources: [visual, integration, reasoning]
+    target_pairs_per_source: 120
+    primary_metric: selectivity
+    bootstrap_unit: group_id
+  natural_attribution:
+    labels: [clean, visual, integration, reasoning]
+    target_n: 400
+    primary_metric: macro_f1
+    clean_threshold: null
+    leakage_controls: [origin, task, group_prefix, metadata]
+
+rq2:
+  source_features: [visual, integration, reasoning]
+  no_propagation_weights:
+    visual: 1.0
+    integration: 1.0
+    reasoning: 1.0
+  propagation_weights:
+    visual: 1.0
+    integration: 1.0
+    reasoning: 1.0
+    interaction: 1.0
+    maximum: 1.0
+  primary_metrics: [auroc, aurc]
+  secondary_metrics: [auprc, brier, ece]
+  risk_coverages: [0.7, 0.8, 0.9]
+
+rq3:
+  primary_policies: [umirage, verify, requery, random_source, no_extra_call]
+  causal_matrix_policies: [force_reinspect, force_compare, force_reasoning]
+  budgets: [0, 1, 2]
+  primary_metric: recovered_accuracy
+  source_actions:
+    visual: reinspect_image
+    integration: compare_images
+    reasoning: verify_reasoning
+  max_new_tokens_per_extra_call: 128
+
+rq4:
+  no_model_specific_retuning: true
+  models:
+    - Qwen/Qwen3-VL-8B-Instruct
+    - Qwen/Qwen2.5-VL-7B-Instruct
+    - OpenGVLab/InternVL3_5-8B-Instruct
+    - microsoft/Phi-4-multimodal-instruct
+  image_count_bins: ["2", "3", "4+"]
+
+stop_rules:
+  rq1_failed_selectivity: report_negative_no_redesign
+  rq2_null_effect: report_negative_no_redesign
+  rq3_no_action_gain: report_negative_no_redesign
+  transfer_failure: report_boundary_no_retuning
