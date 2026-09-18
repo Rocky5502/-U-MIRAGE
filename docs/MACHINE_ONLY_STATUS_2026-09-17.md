@@ -44,6 +44,17 @@ This all-policy collapse is treated as a **degenerate output-validity result**, 
 
 No Source x Repair causal claim is made on this machine-only P81 run. The random-source arm is auxiliary.
 
+The repository includes a diagnostic-only output audit that does not alter the frozen primary estimator:
+
+```bash
+python scripts/audit_rq3_repair_outputs.py \
+  --raw artifacts/protected/machine_only_v1/rq3_qwen3_p81_primary.jsonl \
+  --episodes data/materialized/mirageu_p81_natural_stage_bank/episodes.jsonl \
+  --output artifacts/protected/machine_only_v1/rq3_output_validity_audit.json
+```
+
+Any relaxed-parser accuracy from this audit is post-hoc and must remain diagnostic.
+
 ## RQ4 — hosted access regime and executor transfer
 
 The common black-box uncertainty interface remained invalid: both hosted endpoints supported text and multi-image calls, but no shared log-probability interface was available and all three predeclared common-observable fallbacks failed their common usability gate.
