@@ -14,7 +14,7 @@ The repository separates three source dimensions:
 - **Integration uncertainty** — individually interpretable evidence becomes unstable when combined across images.
 - **Reasoning uncertainty** — the evidence is adequate but the final composition or decision is unreliable.
 
-> **Research status (September 2026).** The development evaluation package and four-model transfer study are complete and auditable. The protected confirmatory RQ1/RQ2/RQ3 protocol and one-time final holdout remain deliberately separate. Development results below must not be read as final protected-holdout claims.
+> **Research status (September 2026).** The machine-only development cycle is complete for RQ1/RQ2/RQ3, and the hosted executor-transfer extension is complete. The latest evidence contains negative/null findings and one degenerate RQ3 output-validity failure; none is promoted to protected-holdout evidence. Calibration-60 and Holdout-360 remain sealed. See [the machine-only status note](docs/MACHINE_ONLY_STATUS_2026-09-17.md).
 
 ## Development result snapshot
 
@@ -47,7 +47,7 @@ All four local model families below were evaluated on the **same 128 development
 
 <p align="center"><em>Routing allocation is a diagnostic only: corrective actions were not executed in this analysis.</em></p>
 
-More details and claim boundaries are in [`docs/RESULTS.md`](docs/RESULTS.md).
+More details and claim boundaries are in [`docs/RESULTS.md`](docs/RESULTS.md). The completed machine-only RQ1/RQ2/RQ3 and hosted-executor evidence is summarized in [`docs/MACHINE_ONLY_STATUS_2026-09-17.md`](docs/MACHINE_ONLY_STATUS_2026-09-17.md).
 
 ## Install
 
