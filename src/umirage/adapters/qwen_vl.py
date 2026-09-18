@@ -33,7 +33,12 @@ class QwenVLAdapter(TransformersVLMAdapter):
         input_len = int(inputs["input_ids"].shape[-1]) if "input_ids" in inputs else 0
         generated = out.sequences[:, input_len:] if input_len else out.sequences
         answer = self.processor.batch_decode(generated, skip_special_tokens=True)[0].strip()
-        confidence, entropy = self._score_generation(out.scores)
+        try:
+            confidence, entropy = self._score_generation(out.scores)
+        except TypeError as exc:
+            if "generated_token_ids" not in str(exc):
+                raise
+            confidence, entropy = self._score_generation(out.scores, generated[0])
         return ModelOutput(
             answer,
             confidence,
