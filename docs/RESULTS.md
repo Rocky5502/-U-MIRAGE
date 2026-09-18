@@ -62,14 +62,62 @@ No corrective action was executed in this diagnostic, so it is **not evidence of
 
 The hosted-model pilot tested whether one common observable uncertainty interface could be used fairly across compared endpoints. Text routing and multi-image capability passed, but common log probabilities were unavailable and all three predeclared common-observable fallbacks failed their shared usability gates. The full hosted-model efficacy sweep was therefore not launched and thresholds were not lowered post hoc.
 
+## Machine-only RQ1 construction-intent stress test
+
+The completed 120-pair-per-source construction-intent stress test does **not** support the intended positive source-selectivity pattern. Mean selectivity is -0.0654 for visual, +0.0021 for integration, and -0.0919 for reasoning; the visual and reasoning 95% bootstrap intervals are below zero, while integration spans zero. This is retained as a negative/null development result. It is not human-validated source ground truth.
+
+## RQ2 exact same-signal propagation
+
+On the 128-episode P81 natural-stage development bank, the frozen same-source-signal comparison gives:
+
+| Metric | No propagation | Propagation | Paired effect |
+|---|---:|---:|---:|
+| AUROC | 0.6862 | 0.6838 | -0.0024 [-0.0130, 0.0085] |
+| AURC | 0.2384 | 0.2397 | favorable control-minus-propagation -0.0014 [-0.0150, 0.0105] |
+| AUPRC | 0.6240 | 0.6162 | descriptive |
+| Brier | 0.2754 | 0.2732 | descriptive |
+| ECE | 0.2563 | 0.2526 | descriptive |
+
+The primary AUROC/AURC intervals cross zero. Small Brier/ECE changes are secondary and are not presented as a propagation win.
+
+## RQ3 matched-budget action execution
+
+The completed machine-only P81 run contains 1,920 rows: 128 episodes x 5 policies x 3 budgets. The raw grid passed validation before evaluation.
+
+| Policy | Budget | Base acc. | Post acc. | Gain | Recovered errors |
+|---|---:|---:|---:|---:|---:|
+| U-MIRAGE | 0 | 0.6484 | 0.6484 | 0.0000 | 0/45 |
+| U-MIRAGE | 1 | 0.6484 | 0.0000 | -0.6484 | 0/45 |
+| U-MIRAGE | 2 | 0.6484 | 0.0000 | -0.6484 | 0/45 |
+| VERIFY | 1 | 0.6484 | 0.0000 | -0.6484 | 0/45 |
+| VERIFY | 2 | 0.6484 | 0.0000 | -0.6484 | 0/45 |
+| REQUERY | 1 | 0.6484 | 0.0000 | -0.6484 | 0/45 |
+| REQUERY | 2 | 0.6484 | 0.0000 | -0.6484 | 0/45 |
+
+All four primary paired comparisons (U-MIRAGE vs VERIFY/REQUERY at budgets 1 and 2) are exactly 0.0000 with [0.0000, 0.0000] bootstrap intervals because every compared repair arm evaluates to zero exact-match accuracy.
+
+This uniform collapse is **not interpreted as evidence that repair is intrinsically harmful**. It is a conspicuous execution/output-scoring diagnostic: the frozen base predictions remain at 0.6484 while every generated repair arm evaluates to zero. The result is preserved without post-hoc redesign, and efficacy claims are withheld pending an independent audit of generated-answer format and scoring compatibility. The Source x Repair causal matrix is not claimed; random-source is auxiliary.
+
+Raw development evidence SHA256: `a37cd2215a1788183505e17195c0591a51fc27a6b0bd39535d3be3a51572c803`.
+
+## Exploratory hosted executor transfer
+
+A separate 32-episode fresh P81 development cohort tested source-conditioned repair execution on two hosted black-box model IDs after the common-observable uncertainty-estimator gate had already failed and remained closed.
+
+| Hosted model ID | Base | Source-conditioned | VERIFY | REQUERY | Source - VERIFY [95% CI] | Source - REQUERY [95% CI] |
+|---|---:|---:|---:|---:|---:|---:|
+| `gpt-6-astra` | 0.8438 | 0.8438 | 0.8438 | 0.8438 | +0.0000 [-0.0938, +0.0938] | +0.0000 [0.0000, 0.0000] |
+| `gemini-3.8-flash` | 0.6250 | 0.6875 | 0.5625 | 0.6250 | +0.1250 [-0.0625, +0.3125] | +0.0625 [-0.0938, +0.2500] |
+
+Both Gemini paired intervals include zero. Parse coverage also differs across conditions, so the point estimates are not attributed solely to source-conditioned routing. This study is exploratory executor transfer, **not** hosted uncertainty-estimator transfer.
+
 ## Protected evaluation boundary
 
 The following remain distinct from the development evidence above:
 
-- protected RQ1 source selectivity;
-- protected RQ2 exact same-signal propagation vs no-propagation control;
-- protected RQ3 executed source-conditioned interventions vs matched-budget generic actions;
-- calibration-only partition use after protocol freeze;
-- one final sealed holdout execution.
+- the machine-only RQ1/RQ2/RQ3 development evidence reported above must not be promoted to final-holdout evidence;
+- calibration-only partition use remains separate and sealed;
+- one final sealed holdout execution remains separate;
+- negative/null development outcomes remain frozen rather than triggering outcome-driven redesign.
 
 Do not label development feature ablations as protected propagation improvement, and do not promote routing allocations into intervention-efficacy claims.
