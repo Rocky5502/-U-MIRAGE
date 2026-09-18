@@ -9,6 +9,19 @@ This protocol prevents post-hoc tuning after calibration or final-holdout data a
 3. **RQ3 / action utility**: execute source-conditioned repairs and compare with generic VERIFY/REQUERY at identical additional-call budgets.
 4. **RQ4 / transfer**: freeze RQ1-RQ3 estimators and policies before architecture or dataset transfer; no model-specific retuning.
 
+## Machine-only development amendment (2026-09-16)
+
+The original confirmatory protocol below is preserved for provenance, but the current manuscript development cycle used a narrower machine-only amendment:
+
+- human RQ1 validation was skipped;
+- RQ1-A is reported only as a construction-intent selectivity stress test;
+- RQ2 and RQ3 use the already-frozen machine-estimated source signals on P81 development;
+- no Source x Repair causal claim is made without human-validated source ground truth;
+- Calibration-60 and Holdout-360 remain sealed;
+- negative/null/degenerate results are reported without redesign based on their sign.
+
+The completed machine-only evidence is summarized in [MACHINE_ONLY_STATUS_2026-09-17.md](MACHINE_ONLY_STATUS_2026-09-17.md). This amendment does **not** rewrite the original protected configuration or retroactively promote development evidence to a protected final result.
+
 ## Freeze before protected data
 
 ```bash
