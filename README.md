@@ -16,6 +16,15 @@ The repository separates three source dimensions:
 
 > **Research status (September 2026).** The machine-only development cycle is complete for RQ1/RQ2/RQ3, and the hosted executor-transfer extension is complete. The latest evidence contains negative/null findings and one degenerate RQ3 output-validity failure; none is promoted to protected-holdout evidence. Calibration-60 and Holdout-360 remain sealed. See [the machine-only status note](docs/MACHINE_ONLY_STATUS_2026-09-17.md).
 
+## Latest machine-only evidence
+
+| Study | Development finding | Claim boundary |
+|---|---|---|
+| RQ1 selectivity | Visual -0.0654, integration +0.0021, reasoning -0.0919 mean selectivity; source-selectivity gate fails | Construction-intent stress test only; no human-validated source claim |
+| RQ2 propagation | Delta AUROC -0.0024 [-0.0130, +0.0085]; favorable Delta AURC -0.0014 [-0.0150, +0.0105] | Exact-same-signal development result; no primary propagation gain |
+| RQ3 action utility | 1,920 rows completed; frozen exact-match scoring collapses every nonzero-budget repair policy to 0 accuracy | Degenerate output-validity result; do not interpret as policy efficacy |
+| RQ4c hosted executor transfer | gpt-6-astra: no paired difference; gemini-3.8-flash: +0.125 vs VERIFY and +0.0625 vs REQUERY, both CIs include zero | Exploratory 32-episode development evidence only |
+
 ## Development result snapshot
 
 All four local model families below were evaluated on the **same 128 development episode IDs** with model-specific direct predictions and structured local/joint probes. Static-vs-Full effects use **10,000 paired bootstrap resamples (seed 2027)**.
