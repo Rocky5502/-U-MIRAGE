@@ -62,6 +62,49 @@ No corrective action was executed in this diagnostic, so it is **not evidence of
 
 The hosted-model pilot tested whether one common observable uncertainty interface could be used fairly across compared endpoints. Text routing and multi-image capability passed, but common log probabilities were unavailable and all three predeclared common-observable fallbacks failed their shared usability gates. The full hosted-model efficacy sweep was therefore not launched and thresholds were not lowered post hoc.
 
+## Completed machine-only development cycle
+
+The machine-only amendment replaces the unfinished human-validation arm for the current development cycle. The resulting claim boundary is narrower: RQ1 is a construction-intent stress test, RQ2/RQ3 use machine-estimated source scores, and no human-validated source-ground-truth claim is made.
+
+### RQ1 construction-intent selectivity
+
+The completed 120-pair-per-source stress test gives:
+
+| Intended source | Mean selectivity | 95% CI |
+|---|---:|---:|
+| Visual | -0.06537 | [-0.08944, -0.04296] |
+| Integration | +0.00215 | [-0.03513, +0.03809] |
+| Reasoning | -0.09188 | [-0.11767, -0.06811] |
+
+The source-selectivity gate fails: visual and reasoning are negative, while integration is null.
+
+### RQ2 exact same-signal propagation
+
+On P81 development (n=128), the no-propagation control has AUROC 0.68621 and AURC 0.23836; the frozen propagator has AUROC 0.68380 and AURC 0.23972. The paired AUROC effect is -0.00241 [95% CI -0.01301, +0.00851], and the favorable AURC effect (control - propagation) is -0.00137 [95% CI -0.01502, +0.01050]. No primary propagation gain is established.
+
+### RQ3 matched-budget execution
+
+The full P81 machine-only run completed 1,920 rows (128 episodes x 5 policies x 3 budgets). Base/no-extra-call accuracy is 0.64844, but every nonzero-budget U-MIRAGE, VERIFY, REQUERY, and random-source cell scores 0.00000 under the frozen exact-match estimator.
+
+Because all repair policies collapse identically, this is treated as a **degenerate output-validity result** rather than a substantive policy-efficacy conclusion. The raw rows retain final answers for post-hoc output-shape/parser diagnostics, but a relaxed parser must not replace the frozen primary estimator. No Source x Repair causal claim is made; random-source is auxiliary.
+
+### Hosted executor transfer
+
+A separate exploratory study used 32 fresh P81 development episodes and two hosted endpoints:
+
+| Model | Base | Source-conditioned | VERIFY | REQUERY |
+|---|---:|---:|---:|---:|
+| gpt-6-astra | 0.8438 | 0.8438 | 0.8438 | 0.8438 |
+| gemini-3.8-flash | 0.6250 | 0.6875 | 0.5625 | 0.6250 |
+
+Paired source-conditioned effects:
+- gpt-6-astra vs VERIFY: +0.0000 [-0.0938, +0.0938]; vs REQUERY: +0.0000 [0, 0].
+- gemini-3.8-flash vs VERIFY: +0.1250 [-0.0625, +0.3125]; vs REQUERY: +0.0625 [-0.0938, +0.2500].
+
+All intervals include zero. Gemini parseability also differs by condition, so the point estimates are exploratory executor evidence only.
+
+See [MACHINE_ONLY_STATUS_2026-09-17.md](MACHINE_ONLY_STATUS_2026-09-17.md) for the full evidence boundary and hashes.
+
 ## Protected evaluation boundary
 
 The following remain distinct from the development evidence above:
