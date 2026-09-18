@@ -20,5 +20,7 @@ jobs:
       - name: Secret pattern scan
         run: python scripts/check_secrets.py
       - run: ruff check src tests scripts
+      - name: Compile experiment entry points
+        run: python -m compileall -q src scripts experiments tests
       - run: pytest -q
       - run: python scripts/make_demo_data.py && python scripts/run_smoke.py
