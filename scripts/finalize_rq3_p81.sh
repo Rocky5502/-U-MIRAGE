@@ -172,6 +172,13 @@ for k in required_paired:
         f"CI95=[{lo:+.6f},{hi:+.6f}]"
     )
 
+degenerate_keys = [
+    "umirage|1", "umirage|2",
+    "verify|1", "verify|2",
+    "requery|1", "requery|2",
+]
+degenerate = all(float(summary[k]["post_accuracy"]) == 0.0 for k in degenerate_keys)
+
 audit = json.loads(audit_path.read_text(encoding="utf-8"))
 audit.update({
     "evaluation_complete": True,
@@ -182,14 +189,22 @@ audit.update({
     "paired_primary_n128": True,
     "source_repair_matrix_claim_allowed": False,
     "random_source_role": "auxiliary only",
-    "note": "P81 development evidence only; source×repair causal claims are not made.",
+    "degenerate_repair_output_collapse": degenerate,
+    "efficacy_claim_valid": not degenerate,
+    "note": (
+        "P81 development evidence only; source×repair causal claims are not made. "
+        "If every nonzero-budget primary repair cell collapses to zero accuracy, "
+        "treat the run as an output-validity failure rather than an efficacy result."
+    ),
 })
 audit_path.write_text(json.dumps(audit, indent=2, sort_keys=True)+"\n", encoding="utf-8")
 
 print()
 print("RQ3_RESULTS_NONEMPTY=PASS")
 print("RQ3_PAIRED_N128=PASS")
-print("RQ3_EVALUATION=PASS")
+print("RQ3_EVALUATION_FILE=PASS")
+print(f"RQ3_DEGENERATE_REPAIR_OUTPUT={'TRUE' if degenerate else 'FALSE'}")
+print(f"RQ3_EFFICACY_CLAIM_VALID={'FALSE' if degenerate else 'TRUE'}")
 PY
 
 echo
