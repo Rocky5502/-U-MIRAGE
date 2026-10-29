@@ -16,6 +16,8 @@ The repository separates three source dimensions:
 
 > **Research status (September 2026).** The machine-only development program is complete and auditable for RQ1--RQ4, including the matched-budget RQ3 action run and the exploratory hosted executor-transfer study. These are **development results**, not final protected-holdout claims. Calibration-60 and Holdout-360 remain sealed.
 
+For CVPR 2027 paper registration, see the [registration metadata and mandatory submission-readiness checklist](docs/CVPR2027_REGISTRATION.md). The manuscript and OpenReview enrollment are separate from repository development status; the current paper requires an eight-page technical-content reduction, an accurate LLM Usage Statement, and an output-contract audit of RQ3 before submission.
+
 ## Development result snapshot
 
 All four local model families below were evaluated on the **same 128 development episode IDs** with model-specific direct predictions and structured local/joint probes. Static-vs-Full effects use **10,000 paired bootstrap resamples (seed 2027)**.
