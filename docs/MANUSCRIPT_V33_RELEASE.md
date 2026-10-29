@@ -14,7 +14,7 @@ These are delivery artifacts attached to the research conversation, **not claime
 
 - RQ1: 360 construction-intent matched pairs fail source selectivity; the human annotation stage was not completed.
 - RQ2: exact-same-source-signal propagation is null/slightly unfavorable on 128 natural development episodes.
-- RQ3: 128 × 5 × 3 = 1,920 policy-budget rows completed; base accuracy 83/128. All nonzero-budget actions score zero under the frozen exact-match evaluator. Four principal paired differences are zero with degenerate [0,0] CIs. **Comparative repair efficacy is blocked pending a read-only raw-answer/output-contract audit**. Original raw input SHA256: `a37cd2215a1788183505e17195c0591a51fc27a6b0bd39535d3be3a51572c803`.
+- RQ3: 128 × 5 × 3 = 1,920 policy-budget rows completed; base accuracy 83/128. All nonzero-budget actions score zero under the frozen exact-match evaluator. Four principal paired differences are zero with degenerate [0,0] CIs. **Comparative repair efficacy is blocked pending a read-only raw-answer/output-contract audit**. Frozen RQ3 raw result JSONL SHA256: `a37cd2215a1788183505e17195c0591a51fc27a6b0bd39535d3be3a51572c803`.
 - RQ4: four-model feature-enrichment effects heterogeneous; hosted uncertainty interface gate fails. RQ4c executor-only `gpt-6-astra` / `gemini-3.8-flash` 32-case development pilot has no paired CI excluding zero.
 - Calibration-60 and Holdout-360 remain sealed; no final protected-result claims are made.
 
