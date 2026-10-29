@@ -27,7 +27,13 @@ from umirage.protected import (
 
 ROOT = Path(".")
 EPISODES = Path("data/materialized/mirageu_p81_natural_stage_bank/episodes.jsonl")
-SCORES = Path(\n    os.environ.get(\n        "UMIRAGE_RQ4C_SCORES",\n        "artifacts/local/qwen3-vl-8b-instruct/"\n        "p81_natural_stage128/predictions.jsonl",\n    )\n)
+SCORES = Path(
+    os.environ.get(
+        "UMIRAGE_RQ4C_SCORES",
+        "artifacts/local/home-zbq-models-qwen3-vl-8b-instruct/"
+        "p81_natural_stage128/predictions.jsonl",
+    )
+)
 OUTDIR = Path("artifacts/rq4_blackbox/executor_transfer_v1")
 
 EXPECTED_EPISODE_SHA256 = (
