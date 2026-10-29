@@ -19,6 +19,8 @@ jobs:
       - run: pip install -e .[dev]
       - name: Secret pattern scan
         run: python scripts/check_secrets.py
+      - name: Compile all research Python entrypoints
+        run: python -m compileall -q src experiments scripts tests
       - run: ruff check src tests scripts
       - run: pytest -q
       - run: python scripts/make_demo_data.py && python scripts/run_smoke.py
