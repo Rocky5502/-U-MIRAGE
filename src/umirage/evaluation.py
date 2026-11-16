@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import math
-
 
 def accuracy(rows: list[dict]) -> float:
     return sum(bool(r["correct"]) for r in rows) / len(rows) if rows else float("nan")
