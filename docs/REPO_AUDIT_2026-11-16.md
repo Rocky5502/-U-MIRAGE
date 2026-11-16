@@ -14,9 +14,20 @@
 1. RQ3: all 1,920 frozen development rows reportedly completed, but every nonzero-budget policy scores zero. Inspect raw generated answers and parser/output contract before any action-efficacy claim. No raw RQ3 archive was available in this connector inspection; the run cannot be certified.
 2. Human source validation was not completed. Never describe construction-intent labels as causal source ground truth.
 3. The calibration and holdout partitions remain sealed. No outcome from development may be represented as protected holdout evidence.
-4. Runtime tests were **not** executed in this assistant session because the connected GitHub tool exposes file contents but not a runnable authenticated clone. A remote CI failure occurred before job steps.
+4. Initial remote CI failed Ruff and skipped pytest, but this was repaired. The final documented run passed 12 pytest tests in each of Python 3.10 and 3.11, including compilation, Ruff and smoke checks. No GPU/real-VLM inference was executed in this session.
 5. Keep historic experiment branches for provenance. Do not force-push or automatically merge old draft PRs.
 6. `src/umirage/adapters/transformers_vlm.py` reports confidence as a mean of per-step maximum vocabulary probabilities; this relies on the greedy decoding behavior and warrants direct generated-token alignment regression tests if generation mode changes.
+
+## Final verified engineering CI (after the above baseline audit)
+
+On 2026-11-16, the repository was updated to correct the concrete lint failures revealed by GitHub Actions, using only formatting/import and routine lint fixes plus an older reviewed baseline formatting change where the target files were unchanged in main.
+
+- **Verified passing run:** [GitHub Actions run 43878180192](https://github.com/Rocky5502/-U-MIRAGE/actions/runs/43878180192).
+- **Python 3.10:** 12 pytest tests passed; Ruff checks passed; compileall, secret scan, and synthetic smoke test passed.
+- **Python 3.11:** 12 pytest tests passed; Ruff checks passed; compileall, secret scan, and synthetic smoke test passed.
+- These tests validate repository plumbing and deterministic unit behavior, **not** GPU evaluation results, raw RQ3 validity, scientific source semantics, or protected-held-out results.
+- The 16 November figure/README documentation was committed and the four SVG paths were independently fetched from main. The original PNGs are provided separately for manual upload if exact pixels are wanted.
+- The final-results draft PR #5 remains open and diverged. Some branch-only audit code is intentionally not merged because an overlapping read-only diagnostic already exists in main; any unique script must be reconciled and tested rather than copied indiscriminately.
 
 ## Changes made in this commit
 
