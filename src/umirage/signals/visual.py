@@ -1,6 +1,7 @@
 from __future__ import annotations
-from .common import clamp01
+
 from ..schema import ModelOutput
+from .common import clamp01
 
 def visual_uncertainty(output: ModelOutput) -> float:
     evidence_gap = 1.0 - (sum(output.evidence_scores)/len(output.evidence_scores) if output.evidence_scores else output.confidence)
