@@ -63,7 +63,7 @@ def risk_coverage(rows: list[dict], coverages=(0.5, 0.7, 0.8, 0.9)) -> list[dict
     ranked = sorted(rows, key=lambda r: float(r["risk"]))
     out = []
     for coverage in coverages:
-        n = max(1, int(round(coverage * len(ranked)))) if ranked else 0
+        n = max(1, round(coverage * len(ranked))) if ranked else 0
         kept = ranked[:n]
         selective_risk = 1.0 - accuracy(kept) if kept else float("nan")
         out.append({"coverage": coverage, "selective_risk": selective_risk, "n": n})
