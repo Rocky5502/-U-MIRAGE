@@ -18,6 +18,28 @@ The repository separates three source dimensions:
 
 For CVPR 2027 paper registration, see the [registration metadata and mandatory submission-readiness checklist](docs/CVPR2027_REGISTRATION.md). The manuscript and OpenReview enrollment are separate from repository development status; the current paper requires an eight-page technical-content reduction, an accurate LLM Usage Statement, and an output-contract audit of RQ3 before submission.
 
+## Figure gallery
+
+The following **conceptual, GitHub-native SVG redrawings** accompany the four supplied manuscript figure concepts. They are not empirical proof of causal source diagnosis, calibrated source posteriors, or improved repair efficacy. The original high-resolution PNGs supplied in chat are **not byte-identical** to these SVGs.
+
+### Figure 1 — Failure origins
+![Three hypothetical uncertainty sources converge on the same unsupported answer](docs/figures/fig1_motivation.svg)
+
+### Figure 2 — Intervention design
+![Matched controls and source-targeted perturbations for the machine-only selectivity audit](docs/figures/fig2_benchmark_taxonomy.svg)
+
+**Important:** The intervention labels describe construction intent. Blinded human source verification was **not completed**; the diagram does not imply otherwise.
+
+### Figure 3 — U-MIRAGE framework
+![Multi-image uncertainty signals pass through integration and reasoning toward risk estimates and proposed actions](docs/figures/fig3_architecture.svg)
+
+### Figure 4 — Source-to-action policy
+![Proposed visual, integration, and reasoning actions with residual-risk abstention](docs/figures/fig4_action_map.svg)
+
+The repaired-answer evaluation remains **non-diagnostic**: under the frozen exact-match scorer, all nonzero-budget policy arms collapse to zero. These diagrams illustrate intended behavior, not experimentally verified repair benefits.
+
+See [figure provenance](docs/FIGURE_PROVENANCE.md) and the [November code review](docs/REPO_AUDIT_2026-11-16.md).
+
 ## Development result snapshot
 
 All four local model families below were evaluated on the **same 128 development episode IDs** with model-specific direct predictions and structured local/joint probes. Static-vs-Full effects use **10,000 paired bootstrap resamples (seed 2027)**.
