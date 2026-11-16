@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Read-only audit of frozen RQ3 answer-output compatibility.
 
 This is NOT an efficacy evaluator. It never modifies raw experiment data,
@@ -72,11 +71,11 @@ def audit(rows: list[dict], episodes: list[dict] | None = None) -> dict:
             "empty_answer_count": sum(not x.strip() for x in texts),
             "unique_answer_count": len(set(strict)),
             "answer_prefix_count": sum(
-                bool(re.match(r"^(final\s+answer|answer|response)\s*[:=]", x, re.I))
+                bool(re.match(r"^(final\s+answer|answer|response)\s*[:=]", x, re.IGNORECASE))
                 for x in texts
             ),
             "yes_no_prefix_count": sum(
-                bool(re.match(r"^\s*(yes|no)\b", x, re.I)) for x in texts
+                bool(re.match(r"^\s*(yes|no)\b", x, re.IGNORECASE)) for x in texts
             ),
             "mean_answer_chars": sum(map(len, texts)) / len(rr),
             "mean_extra_tokens": sum(float(x.get("extra_tokens", 0)) for x in rr) / len(rr),
