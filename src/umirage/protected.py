@@ -5,7 +5,7 @@ import json
 import math
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 
 SOURCES = ("visual", "integration", "reasoning")
 LABELS = ("clean",) + SOURCES
