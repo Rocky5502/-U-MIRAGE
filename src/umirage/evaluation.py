@@ -47,7 +47,7 @@ def auroc(rows: list[dict]) -> float:
 def auprc(rows: list[dict]) -> float:
     """Average precision for failure detection using risk as the score."""
     ordered = sorted(rows, key=lambda r: float(r["risk"]), reverse=True)
-    positives = sum(int(not r["correct"]) for r in ordered)
+    positives = sum(not r["correct"] for r in ordered)
     if positives == 0:
         return float("nan")
     hit = 0
