@@ -14,9 +14,13 @@ The repository separates three source dimensions:
 - **Integration uncertainty** — individually interpretable evidence becomes unstable when combined across images.
 - **Reasoning uncertainty** — the evidence is adequate but the final composition or decision is unreliable.
 
-> **Research status (September 2026).** The machine-only development program is complete and auditable for RQ1--RQ4, including the matched-budget RQ3 action run and the exploratory hosted executor-transfer study. These are **development results**, not final protected-holdout claims. Calibration-60 and Holdout-360 remain sealed.
+> **Research status (development evidence frozen September 2026; repository CI rechecked November 2026).** The machine-only development program is complete and auditable for RQ1--RQ4, including the matched-budget RQ3 action run and the exploratory hosted executor-transfer study. These are **development results**, not final protected-holdout claims. Calibration-60 and Holdout-360 remain sealed.
 
-For CVPR 2027 paper registration, see the [registration metadata and mandatory submission-readiness checklist](docs/CVPR2027_REGISTRATION.md). The manuscript and OpenReview enrollment are separate from repository development status; the current paper requires an eight-page technical-content reduction, an accurate LLM Usage Statement, and an output-contract audit of RQ3 before submission.
+For CVPR 2027 paper registration, see the [registration metadata and mandatory submission-readiness checklist](docs/CVPR2027_REGISTRATION.md). The manuscript and OpenReview enrollment are separate from repository development status; a separate eight-page manuscript revision candidate exists, but the official template, anonymous release package, and RQ3 output-contract audit still require independent submission checks.
+
+## Engineering verification
+
+The [latest verified GitHub Actions run](https://github.com/Rocky5502/-U-MIRAGE/actions/runs/43878180192) passed on **Python 3.10 and 3.11** (12 tests each), including Ruff, research-entrypoint compilation, secret scanning, and a synthetic smoke test. This is an engineering baseline, **not** validation of RQ3 repair accuracy or sealed held-out experiments. See the [November 2026 audit](docs/REPO_AUDIT_2026-11-16.md) for reproducibility blockers and branch status.
 
 ## Figure gallery
 
