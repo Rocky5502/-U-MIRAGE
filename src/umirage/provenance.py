@@ -16,7 +16,7 @@ def _run(cmd: list[str]) -> str | None:
             stderr=subprocess.DEVNULL,
             text=True,
         ).strip()
-    except Exception:
+    except Exception:  # noqa: BLE001 - best-effort environment inspection
         return None
 
 
@@ -49,7 +49,7 @@ def environment_manifest(extra: dict | None = None) -> dict:
                 "cuda_available": torch.cuda.is_available(),
             }
         )
-    except Exception:
+    except Exception:  # noqa: BLE001 - best-effort environment inspection
         manifest["torch"] = None
 
     if extra:
