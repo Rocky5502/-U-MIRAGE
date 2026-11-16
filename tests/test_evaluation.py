@@ -1,6 +1,6 @@
 import math
 
-from umirage.evaluation import auprc, auroc, ece, source_macro_f1, summarize
+from umirage.evaluation import auprc, auroc, source_macro_f1, summarize
 
 
 def rows():
