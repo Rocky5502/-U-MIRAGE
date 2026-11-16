@@ -2,6 +2,7 @@ from umirage.adapters.mock import MockMultiImageAdapter
 from umirage.pipeline import UMiragePipeline
 from umirage.schema import Episode
 
+
 def ep(source="integration"):
     return Episode("x",("a","b","c"),"q","alpha",source,{"synthetic":{"risk":0.76,"wrong_answer":"beta"}})
 
